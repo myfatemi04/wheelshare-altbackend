@@ -2,6 +2,8 @@ import { PrismaClient } from "@prisma/client";
 import express, { NextFunction, Request, Router, Response } from "express";
 import SessionManager, { Session } from "./sessions";
 import { T } from "./validate";
+import cors from "cors";
+import { json } from "body-parser";
 
 const prisma = new PrismaClient();
 
@@ -93,6 +95,12 @@ api.post("/events", async (req, res) => {
 });
 
 const app = express();
+app.use(
+  cors({
+    origin: "*",
+  })
+);
+app.use(json());
 app.use("/api", authenticate, api);
 
 async function main() {
