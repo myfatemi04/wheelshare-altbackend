@@ -32,6 +32,17 @@ function getEvents() {
   });
 }
 
+function createGroup(name: string) {
+  return prisma.group.create({
+    select: {
+      id: true,
+    },
+    data: {
+      name,
+    },
+  });
+}
+
 function createEvent(
   name: string,
   startTime: Date,
@@ -100,6 +111,19 @@ const assertEvent = T.objectWithKeys({
   endTime: T.date(),
   placeId: T.string(),
   groupId: T.optional(T.number()),
+});
+
+const assertGroupInit = T.objectWithKeys({
+  name: T.string(),
+});
+
+api.post("/groups", (req, res) => {
+  const { name } = assertGroupInit(req.body);
+  createGroup(name).then(({ id }) => {
+    res.json({
+      id,
+    });
+  });
 });
 
 api.post("/events", (req, res) => {
