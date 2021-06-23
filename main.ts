@@ -8,6 +8,39 @@ import { AssertionError } from "assert";
 
 const prisma = new PrismaClient();
 
+function getGroup(id: number) {
+  return prisma.group.findFirst({
+    where: {
+      id,
+    },
+  });
+}
+
+async function deleteGroup(id: number) {
+  await prisma.event.deleteMany({
+    where: {
+      groupId: id,
+    },
+  });
+
+  return await prisma.group.delete({
+    where: {
+      id,
+    },
+  });
+}
+
+function getGroupEvents(id: number) {
+  return prisma.group.findFirst({
+    select: {
+      events: true,
+    },
+    where: {
+      id,
+    },
+  });
+}
+
 function getGroups() {
   return prisma.group.findMany();
 }
@@ -115,6 +148,60 @@ const assertEvent = T.objectWithKeys({
 
 const assertGroupInit = T.objectWithKeys({
   name: T.string(),
+});
+
+api.get("/groups/:id", (req, res) => {
+  const id = +req.params.id;
+  if (isNaN(id)) {
+    res.json(null);
+    return;
+  }
+
+  getGroup(id)
+    .then((group) => {
+      res.json(group);
+    })
+    .catch((error) => {
+      console.error(error);
+      res.json(null);
+    });
+});
+
+api.delete("/groups/:id", (req, res) => {
+  const id = +req.params.id;
+  if (isNaN(id)) {
+    res.json(null);
+    return;
+  }
+
+  deleteGroup(id)
+    .then(() => res.json({ status: "success" }))
+    .catch((error) => {
+      console.error(error);
+      res.json({ status: "error" });
+    });
+});
+
+api.get("/groups/:id/events", (req, res) => {
+  const id = +req.params.id;
+  if (isNaN(id)) {
+    res.json(null);
+    return;
+  }
+
+  getGroupEvents(id).then((result) => {
+    if (!result) {
+      res.json(null);
+      return;
+    }
+    res.json(result.events);
+  });
+});
+
+api.get("/groups", (req, res) => {
+  getGroups().then((groups) => {
+    res.json(groups);
+  });
 });
 
 api.post("/groups", (req, res) => {
