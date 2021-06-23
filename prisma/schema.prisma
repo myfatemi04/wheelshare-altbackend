@@ -22,9 +22,11 @@ model Group {
 }
 
 model Event {
-  id      Int      @id @default(autoincrement())
-  name    String
-  groupId Int
-  group   Group    @relation(fields: groupId, references: [id])
-  endTime DateTime
+  id        Int      @id @default(autoincrement())
+  name      String
+  groupId   Int
+  group     Group    @relation(fields: groupId, references: [id])
+  startTime DateTime
+  endTime   DateTime
+  placeId   String
 }

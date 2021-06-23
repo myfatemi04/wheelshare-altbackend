@@ -4,6 +4,7 @@ import SessionManager, { Session } from "./sessions";
 import { T } from "./validate";
 import cors from "cors";
 import { json } from "body-parser";
+import { AssertionError } from "assert";
 
 const prisma = new PrismaClient();
 
@@ -31,15 +32,27 @@ function getEvents() {
   });
 }
 
-function createEvent(name: string, endTime: Date, groupId: number) {
+function createEvent(
+  name: string,
+  startTime: Date,
+  endTime: Date,
+  groupId: number,
+  placeId: string
+) {
   return prisma.event.create({
     select: {
       id: true,
     },
     data: {
       name,
+      startTime,
       endTime,
-      groupId,
+      group: {
+        connect: {
+          id: groupId,
+        },
+      },
+      placeId,
     },
   });
 }
@@ -68,6 +81,7 @@ function authenticate(req: Request, res: Response, next: NextFunction) {
 }
 
 const api = Router();
+
 api.get("/users/@me/groups", async (req, res) => {
   // @ts-expect-error
   const userID: number = req.session.userId;
@@ -82,16 +96,35 @@ api.get("/events", async (req, res) => {
 
 const assertEvent = T.objectWithKeys({
   name: T.string(),
+  startTime: T.date(),
   endTime: T.date(),
+  placeId: T.string(),
   groupId: T.optional(T.number()),
 });
 
-api.post("/events", async (req, res) => {
-  const { name, endTime, groupId } = assertEvent(req.query);
-  const { id } = await createEvent(name, endTime, groupId);
-  res.json({
-    id,
+api.post("/events", (req, res) => {
+  const { name, startTime, endTime, placeId, groupId } = assertEvent(req.body);
+  console.log({ name, startTime, endTime, placeId, groupId });
+  createEvent(name, startTime, endTime, groupId, placeId).then(({ id }) => {
+    res.json({
+      id,
+    });
   });
+});
+
+api.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  if (err instanceof AssertionError) {
+    res.status(400);
+    res.json({
+      error: err.message,
+    });
+  } else {
+    res.status(500);
+    res.json({
+      error: "server error",
+    });
+    console.error(err);
+  }
 });
 
 const app = express();

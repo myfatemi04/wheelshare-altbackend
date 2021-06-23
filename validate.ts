@@ -10,6 +10,28 @@ type ObjectWithKeysAssertedValue<
   [key in keyof T]: ReturnType<T[key]>;
 };
 
+function assertAnyString(x: any) {
+  if (typeof x === "string") {
+    return x;
+  }
+
+  expected("string");
+}
+
+function assertNumber(x: any) {
+  if (typeof x == "number") {
+    return x;
+  }
+  if (typeof x == "string") {
+    const number = Number(x);
+    if (!isNaN(number)) {
+      return number;
+    }
+  }
+
+  expected("number");
+}
+
 export const T = {
   exact<V>(value: V) {
     return (x: any): V => {
@@ -29,13 +51,7 @@ export const T = {
         expected("string with value " + JSON.stringify(value));
       };
     } else {
-      return (x: any) => {
-        if (typeof x === "string") {
-          return x;
-        }
-
-        expected("string");
-      };
+      return assertAnyString;
     }
   },
   date() {
@@ -45,27 +61,21 @@ export const T = {
       }
       if (typeof x === "number") {
         const date = new Date(x);
-        if (isNaN(date.valueOf())) {
-          expected("date");
+        if (!isNaN(date.valueOf())) {
+          return date;
         }
-        return date;
       }
       if (typeof x === "string") {
         const date = new Date(x);
-        if (isNaN(date.valueOf())) {
-          expected("date");
+        if (!isNaN(date.valueOf())) {
+          return date;
         }
-        return date;
       }
+      expected("date");
     };
   },
   number() {
-    return (x: any) => {
-      if (typeof x != "number") {
-        expected("number");
-      }
-      return x;
-    };
+    return assertNumber;
   },
   optional<T>(checker: (...args: any) => T) {
     return (x: any): T | undefined => {
@@ -77,32 +87,31 @@ export const T = {
   },
   objectWithKeys<T extends Record<string, (...args: any) => any>>(schema: T) {
     const assertions = Object.entries(schema);
+    const possibleKeys = new Set(Object.keys(schema));
     return (x: any): ObjectWithKeysAssertedValue<T> => {
       if (typeof x !== "object") {
         expected("object");
       }
 
-      const existingKeys = Object.keys(x);
-      if (assertions.length !== existingKeys.length) {
-        expected("object with entries");
-      }
-
-      const hasProperty = Object.prototype.hasOwnProperty.bind(x);
+      const newObject = {};
 
       for (let [key, assert] of assertions) {
-        if (!hasProperty(key)) {
-          expected("object with key " + key);
+        try {
+          newObject[key] = assert(x[key]);
+        } catch (e) {
+          const assertionError = e as AssertionError;
+          const what = assertionError.message.slice("expected ".length);
+          expected(what + " at " + key);
         }
-        assert(x[key]);
       }
 
-      for (let key of existingKeys) {
-        if (!(key in assertions)) {
+      for (let key of Object.keys(x)) {
+        if (!possibleKeys.has(key)) {
           expected("to not have key " + key);
         }
       }
 
-      return x;
+      return newObject as any;
     };
   },
 };
