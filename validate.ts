@@ -10,6 +10,16 @@ type ObjectWithKeysAssertedValue<
   [key in keyof T]: ReturnType<T[key]>;
 };
 
+function assertNonEmptyString(x: any) {
+  if (typeof x === "string") {
+    if (x.length > 0) {
+      return x;
+    }
+  }
+
+  expected("non-empty string");
+}
+
 function assertAnyString(x: any) {
   if (typeof x === "string") {
     return x;
@@ -40,6 +50,9 @@ export const T = {
       }
       return x;
     };
+  },
+  nonemptyString() {
+    return assertNonEmptyString;
   },
   string(value?: string) {
     if (value) {
