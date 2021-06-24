@@ -28,5 +28,9 @@ model Event {
   group     Group    @relation(fields: groupId, references: [id])
   startTime DateTime
   endTime   DateTime
-  placeId   String
+
+  placeId          String
+  formattedAddress String
+  latitude         Float
+  longitude        Float
 }

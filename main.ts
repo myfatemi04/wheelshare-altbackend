@@ -1,12 +1,43 @@
+import "dotenv/config";
+
 import { PrismaClient } from "@prisma/client";
-import express, { NextFunction, Request, Router, Response } from "express";
+import { AssertionError } from "assert";
+import { json } from "body-parser";
+import cors from "cors";
+import express, { NextFunction, Request, Response, Router } from "express";
 import SessionManager, { Session } from "./sessions";
 import { T } from "./validate";
-import cors from "cors";
-import { json } from "body-parser";
-import { AssertionError } from "assert";
+import fetch from "node-fetch";
 
 const prisma = new PrismaClient();
+
+const googleAPIKey = process.env.GOOGLE_API_KEY;
+const placeFields = ["formatted_address", "geometry"].join(",");
+async function getPlaceDetails(placeId: string) {
+  const response = await fetch(
+    `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${googleAPIKey}&fields=${placeFields}`
+  );
+  const json = await response.json();
+
+  console.log(placeId, json);
+
+  if (json.status === "OK") {
+    const { result } = json;
+
+    const transformed = {
+      formattedAddress: result.formatted_address,
+      latitude: result.geometry.location.lat,
+      longitude: result.geometry.location.lng,
+    };
+
+    return transformed;
+  } else if (json.status === "INVALID_REQUEST") {
+    return null;
+  } else if (json.status === "REQUEST_DENIED") {
+    console.error("Google Maps API request was denied.");
+    return null;
+  }
+}
 
 function getGroup(id: number) {
   return prisma.group.findFirst({
@@ -76,14 +107,19 @@ function createGroup(name: string) {
   });
 }
 
-function createEvent(
+async function createEvent(
   name: string,
   startTime: Date,
   endTime: Date,
   groupId: number,
   placeId: string
 ) {
-  return prisma.event.create({
+  const placeDetails = await getPlaceDetails(placeId);
+  if (placeDetails == null) {
+    throw new Error("invalid placeId");
+  }
+  const { latitude, longitude, formattedAddress } = placeDetails;
+  return await prisma.event.create({
     select: {
       id: true,
     },
@@ -97,6 +133,9 @@ function createEvent(
         },
       },
       placeId,
+      latitude,
+      longitude,
+      formattedAddress,
     },
   });
 }
