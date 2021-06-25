@@ -42,6 +42,13 @@ function assertNumber(x: any) {
   expected("number");
 }
 
+function assertBoolean(x: any) {
+  if (typeof x == "boolean") {
+    return x;
+  }
+  expected("boolean [true or false]");
+}
+
 export const T = {
   exact<V>(value: V) {
     return (x: any): V => {
@@ -54,18 +61,37 @@ export const T = {
   nonemptyString() {
     return assertNonEmptyString;
   },
-  string(value?: string) {
-    if (value) {
-      return (x: any) => {
-        if (typeof x === "string") {
+  string() {
+    return assertAnyString;
+  },
+  stringValue<T extends string>(value: T) {
+    return (x: any): T => {
+      if (typeof x === "string") {
+        if (x === value) {
+          // @ts-ignore
           return x;
         }
+      }
 
-        expected("string with value " + JSON.stringify(value));
-      };
-    } else {
-      return assertAnyString;
-    }
+      expected("string with value " + JSON.stringify(value));
+    };
+  },
+  stringEnum<T extends string>(possibleValues: Iterable<T>) {
+    const set = new Set(possibleValues);
+    const repr = Array.from(set).join(", ");
+    return (x: any) => {
+      if (typeof x === "string") {
+        // @ts-ignore
+        if (set.has(x)) {
+          return x as T;
+        }
+      }
+
+      expected("enum of " + repr);
+    };
+  },
+  boolean() {
+    return assertBoolean;
   },
   date() {
     return (x: any) => {
@@ -125,6 +151,24 @@ export const T = {
       }
 
       return newObject as any;
+    };
+  },
+  anyOf<F extends (...args: any) => any>(checkers: F[]) {
+    type ReturnTypeUnion = ReturnType<typeof checkers[number]>;
+    if (checkers.length === 0) {
+      throw new Error("union type cannot be created with 0 validators");
+    }
+    return (x: any): ReturnTypeUnion => {
+      const expectedMessages = [];
+      for (let checker of checkers) {
+        try {
+          return checker(x);
+        } catch (e) {
+          const what = e.message.slice("expected ".length);
+          expectedMessages.push(what);
+        }
+      }
+      expected(expectedMessages.join(", "));
     };
   },
 };

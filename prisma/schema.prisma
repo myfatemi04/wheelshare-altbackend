@@ -8,10 +8,11 @@ generator client {
 }
 
 model User {
-  id     Int     @id @default(autoincrement())
-  email  String  @unique
-  name   String?
-  groups Group[] @relation(references: [id])
+  id      Int           @id @default(autoincrement())
+  email   String        @unique
+  name    String?
+  groups  Group[]       @relation(references: [id])
+  signups EventSignup[]
 }
 
 model Group {
@@ -33,4 +34,23 @@ model Event {
   formattedAddress String
   latitude         Float
   longitude        Float
+
+  signups EventSignup[]
+}
+
+enum EventSignupType {
+  GOING_CANDRIVE
+  GOING_CANNOTDRIVE
+  INTERESTED
+  NOTGOING
+}
+
+model EventSignup {
+  eventId Int
+  event   Event           @relation(fields: userId, references: [id])
+  userId  Int
+  user    User            @relation(fields: userId, references: [id])
+  type    EventSignupType @default(NOTGOING)
+
+  @@id([eventId, userId])
 }

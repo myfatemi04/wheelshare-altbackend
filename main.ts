@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import { PrismaClient } from "@prisma/client";
+import { EventSignupType, PrismaClient } from "@prisma/client";
 import { AssertionError } from "assert";
 import { json } from "body-parser";
 import cors from "cors";
@@ -140,6 +140,42 @@ async function createEvent(
   });
 }
 
+function updateEventSignup(
+  eventId: number,
+  userId: number,
+  type: EventSignupType
+) {
+  return prisma.eventSignup.upsert({
+    where: {
+      eventId_userId: {
+        eventId,
+        userId,
+      },
+    },
+    update: {
+      type: {
+        set: type,
+      },
+    },
+    create: {
+      eventId,
+      userId,
+      type,
+    },
+  });
+}
+
+function deleteEventSignup(eventId: number, userId: number) {
+  return prisma.eventSignup.delete({
+    where: {
+      eventId_userId: {
+        eventId,
+        userId,
+      },
+    },
+  });
+}
+
 function authenticate(req: Request, res: Response, next: NextFunction) {
   const dummySession: Session = {
     userId: 0,
@@ -175,6 +211,67 @@ api.get("/users/@me/groups", async (req, res) => {
 api.get("/events", async (req, res) => {
   const events = await getEvents();
   res.json(events);
+});
+
+const assertEventSignupInit = T.anyOf([
+  T.objectWithKeys({
+    type: T.stringValue("GOING_CANDRIVE"),
+  }),
+  T.objectWithKeys({
+    type: T.stringValue("GOING_CANNOTDRIVE"),
+  }),
+  T.objectWithKeys({
+    type: T.stringValue("INTERESTED"),
+    pickup: T.optional(
+      T.objectWithKeys({
+        placeId: T.string(),
+      })
+    ),
+    dropoff: T.optional(
+      T.objectWithKeys({
+        placeId: T.string(),
+      })
+    ),
+  }),
+  T.objectWithKeys({
+    type: T.stringValue("NOTGOING"),
+  }),
+]);
+
+api.post("/events/:id/signup", (req, res) => {
+  // @ts-expect-error
+  const userId = req.session.userId;
+  const id = +req.params.id;
+  const signup = assertEventSignupInit(req.body);
+  if (isNaN(id)) {
+    res.status(400);
+    return;
+  }
+  if (signup.type === "INTERESTED") {
+    //
+  }
+  updateEventSignup(id, userId, signup.type)
+    .then(() => {
+      res.json({ status: "success" });
+    })
+    .catch(() => {
+      res.status(500);
+      res.json({ status: "error" });
+    });
+});
+
+api.delete("/events/:id/signup", (req, res) => {
+  // @ts-expect-error
+  const userId = req.session.userId;
+  const id = +req.params.id;
+  deleteEventSignup(id, userId)
+    .then(() => {
+      res.json({ status: "success" });
+    })
+    .catch(() => {
+      res.status(500);
+      res.json({ status: "error" });
+    });
 });
 
 const assertEvent = T.objectWithKeys({
@@ -254,7 +351,6 @@ api.post("/groups", (req, res) => {
 
 api.post("/events", (req, res) => {
   const { name, startTime, endTime, placeId, groupId } = assertEvent(req.body);
-  console.log({ name, startTime, endTime, placeId, groupId });
   createEvent(name, startTime, endTime, groupId, placeId).then(({ id }) => {
     res.json({
       id,
