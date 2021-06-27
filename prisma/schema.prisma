@@ -47,7 +47,7 @@ enum EventSignupType {
 
 model EventSignup {
   eventId Int
-  event   Event @relation(fields: userId, references: [id])
+  event   Event @relation(fields: eventId, references: [id])
   userId  Int
   user    User  @relation(fields: userId, references: [id])
 

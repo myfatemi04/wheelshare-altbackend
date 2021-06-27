@@ -1,10 +1,36 @@
 import prisma from "./prisma";
 
-export function update(eventId: number, userId: number) {
+export function update({
+  eventId,
+  userId,
+  formattedAddress,
+  longitude,
+  latitude,
+  placeId,
+}: {
+  eventId: number;
+  userId: number;
+  formattedAddress: string;
+  latitude: number;
+  longitude: number;
+  placeId: string;
+}) {
   return prisma.eventSignup.create({
     data: {
-      eventId,
-      userId,
+      event: {
+        connect: {
+          id: eventId,
+        },
+      },
+      user: {
+        connect: {
+          id: userId,
+        },
+      },
+      formattedAddress,
+      latitude,
+      longitude,
+      placeId,
     },
   });
 }

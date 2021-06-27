@@ -32,18 +32,25 @@ rtr.post("/events/:id/signup", async (req) => {
   // @ts-expect-error
   const userId = req.session.userId;
   const id = +req.params.id;
-  if (isNaN(id)) {
+  if (!isFinite(id)) {
     throw new AssertionError({ message: "id is not number" });
   }
 
   const { placeId } = assertEventSignupInit(req.body);
   const details = await getPlaceDetails(placeId);
-  try {
-    api.signups.update(id, userId);
-    return "success";
-  } catch (e) {
-    return "error";
+  if (!details) {
+    throw new Error("placeid was invalid");
   }
+
+  const { latitude, longitude, formattedAddress } = details;
+  await api.signups.update({
+    eventId: id,
+    userId,
+    latitude,
+    longitude,
+    formattedAddress,
+    placeId,
+  });
 });
 
 rtr.delete("/events/:id/signup", async (req) => {
