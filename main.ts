@@ -24,6 +24,8 @@ rtr.get("/users/@me/groups", (req) =>
 
 rtr.get("/events", api.events.getAll);
 
+rtr.get("/place/:id", (req) => getPlaceDetails(req.params.id));
+
 const assertEventSignupInit = T.object({
   placeId: T.string(),
 });
