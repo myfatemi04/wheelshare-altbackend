@@ -1,0 +1,25 @@
+wheelshare
+
+Inspiration:
+TJ is a magnet school which attracts over 1600 students from counties across Northern Virginia.
+Because students are spread out - some living over two hours away - transportation for after-school
+activities and sports is a difficult puzzle to solve. We wanted to develop an app that would help
+parents and students save time, reduce traffic, and use energy efficiently. 
+
+How it works:
+1) You're invited to a group by someone you trust in real life.
+2) You see an event: an after-school football game at TJ.
+3) You click "I'm interested!"
+4) You see other people who are interested and aren't already in a carpool.
+   WheelShare calculates how much extra distance it would add to the commute
+   to pick each of them up.
+5) You see that one of your friends lives on the route to the event, and
+   it would only add a minute to your travel time to pick them up.
+6) You invite them to carpool with you. If they accept, you're be ready to go!
+
+You can send direct messages through the app, and all carpools automatically have
+a group chat created for them.
+
+You can invite people to a carpool regardless of if they can drive themselves or not.
+However, if they don't already have a confirmed ride, they'll be bumped to the top of
+the list.

@@ -47,10 +47,14 @@ enum EventSignupType {
 
 model EventSignup {
   eventId Int
-  event   Event           @relation(fields: userId, references: [id])
+  event   Event @relation(fields: userId, references: [id])
   userId  Int
-  user    User            @relation(fields: userId, references: [id])
-  type    EventSignupType @default(NOTGOING)
+  user    User  @relation(fields: userId, references: [id])
+
+  placeId          String
+  formattedAddress String
+  latitude         Float
+  longitude        Float
 
   @@id([eventId, userId])
 }

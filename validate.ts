@@ -124,7 +124,10 @@ export const T = {
       return checker(x);
     };
   },
-  objectWithKeys<T extends Record<string, (...args: any) => any>>(schema: T) {
+  object<T extends Record<string, (...args: any) => any>>(
+    schema: T,
+    allowOtherKeys = false
+  ) {
     const assertions = Object.entries(schema);
     const possibleKeys = new Set(Object.keys(schema));
     return (x: any): ObjectWithKeysAssertedValue<T> => {
@@ -140,18 +143,23 @@ export const T = {
         } catch (e) {
           const assertionError = e as AssertionError;
           const what = assertionError.message.slice("expected ".length);
-          expected(what + " at " + key);
+          expected(`${what} at ${key}`);
         }
       }
 
-      for (let key of Object.keys(x)) {
-        if (!possibleKeys.has(key)) {
-          expected("to not have key " + key);
+      if (!allowOtherKeys) {
+        for (let key of Object.keys(x)) {
+          if (!possibleKeys.has(key)) {
+            expected(`to not have key ${key}`);
+          }
         }
       }
 
       return newObject as any;
     };
+  },
+  extends<T extends Record<string, (...args: any) => any>>(schema: T) {
+    return T.object(schema, true);
   },
   anyOf<F extends (...args: any) => any>(checkers: F[]) {
     type ReturnTypeUnion = ReturnType<typeof checkers[number]>;
