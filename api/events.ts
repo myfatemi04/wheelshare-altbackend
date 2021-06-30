@@ -47,3 +47,13 @@ export async function create({
     },
   });
 }
+
+export async function signups(id: number) {
+  const signups = await prisma.eventSignup.findMany({
+    where: {
+      eventId: id,
+    },
+  });
+
+  return signups;
+}

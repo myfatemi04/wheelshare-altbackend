@@ -10,6 +10,7 @@ import authenticate from "./authenticate";
 import CustomRouter from "./customrouter";
 import { getPlaceDetails } from "./googlemaps";
 import { T } from "./validate";
+import { signups } from "./api/events";
 
 const prisma = new PrismaClient();
 
@@ -28,6 +29,15 @@ rtr.get("/place/:id", (req) => getPlaceDetails(req.params.id));
 
 const assertEventSignupInit = T.object({
   placeId: T.string(),
+});
+
+rtr.get("/events/:id/signups", async (req) => {
+  const id = +req.params.id;
+  if (!isFinite(id)) {
+    throw new AssertionError({ message: "id is not number" });
+  }
+
+  return await signups(id);
 });
 
 rtr.post("/events/:id/signup", async (req) => {
