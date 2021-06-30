@@ -1,6 +1,7 @@
 datasource db {
-  provider = "postgres"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./wheelshare.db"
+  // url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -36,13 +37,6 @@ model Event {
   longitude        Float
 
   signups EventSignup[]
-}
-
-enum EventSignupType {
-  GOING_CANDRIVE
-  GOING_CANNOTDRIVE
-  INTERESTED
-  NOTGOING
 }
 
 model EventSignup {
