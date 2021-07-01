@@ -6,7 +6,7 @@ import {
 import { getPlaceDetails } from "../googlemaps";
 import prisma from "./prisma";
 
-export async function getAll() {
+export async function all() {
   return await prisma.event.findMany({
     orderBy: {
       endTime: "desc",

@@ -17,19 +17,15 @@ const prisma = new PrismaClient();
 const rtr = new CustomRouter();
 
 rtr.get("/users/@me/groups", (req) =>
-  api.users.getGroups(
+  api.users.groups(
     // @ts-expect-error
     req.session.userId
   )
 );
 
-rtr.get("/events", api.events.getAll);
+rtr.get("/events", api.events.all);
 
 rtr.get("/place/:id", (req) => getPlaceDetails(req.params.id));
-
-const assertEventSignupInit = T.object({
-  placeId: T.string(),
-});
 
 rtr.get("/events/:id/signups", async (req) => {
   const id = +req.params.id;
@@ -38,6 +34,10 @@ rtr.get("/events/:id/signups", async (req) => {
   }
 
   return await signups(id);
+});
+
+const assertEventSignupInit = T.object({
+  placeId: T.string(),
 });
 
 rtr.post("/events/:id/signup", async (req) => {
