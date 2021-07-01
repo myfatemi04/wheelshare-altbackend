@@ -67,7 +67,7 @@ model Event {
   duration  Int // Minutes
 
   // Default at startTime + duration
-  endTime DateTime
+  endTime DateTime?
 
   // 00100000 & daysOfWeek = 00100000 !== 0 --> Mondays
   // 0SMTWTFS

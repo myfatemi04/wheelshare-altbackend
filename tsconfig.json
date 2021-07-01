@@ -2,5 +2,8 @@
   "compilerOptions": {
     "esModuleInterop": true
   },
-  "files": ["./index.d.ts"]
+  "files": ["./index.d.ts"],
+  "typeAcquisition": {
+    "include": ["jest"]
+  }
 }

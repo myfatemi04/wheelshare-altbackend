@@ -23,6 +23,9 @@ export default class CustomRouter {
           res.status(400);
           res.json({ status: "error", message: e.message });
         } else {
+          console.error("Unexpected server error");
+          console.error(e);
+          res.status(500);
           res.json({ status: "error" });
         }
       }

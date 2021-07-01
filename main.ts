@@ -10,7 +10,7 @@ import authenticate from "./authenticate";
 import CustomRouter from "./customrouter";
 import { getPlaceDetails } from "./googlemaps";
 import { T } from "./validate";
-import { signups } from "./api/events";
+import { signups, EventInit } from "./api/events";
 
 const prisma = new PrismaClient();
 
@@ -73,12 +73,21 @@ rtr.delete("/events/:id/signup", async (req) => {
   await api.signups.delete(id, userId);
 });
 
-const assertEventInit = T.object({
+const assertEventInit: (v: any) => EventInit = T.object({
   name: T.string(),
   startTime: T.date(),
-  endTime: T.date(),
+  duration: T.number(),
   placeId: T.string(),
   groupId: T.optional(T.number()),
+  endDate: T.anyOf([T.date(), T.exact<null>(null)]),
+  daysOfWeek: (d) => {
+    if (typeof d === "number" && isFinite(d)) {
+      if (Number.isInteger(d) && d <= 0b0111_1111 && d >= 0b0000_0000) {
+        return d;
+      }
+    }
+    throw new AssertionError({ message: "expected 0b0XXX_XXXX" });
+  },
 });
 
 const assertGroupInit = T.object({
@@ -119,7 +128,7 @@ rtr.get("/groups/:id/events", async (req) => {
 
 rtr.get("/groups", () => api.groups.all());
 rtr.post("/groups", (req) => api.groups.create(assertGroupInit(req.body)));
-// rtr.post("/events", (req) => api.events.create(assertEventInit(req.body)));
+rtr.post("/events", (req) => api.events.create(assertEventInit(req.body)));
 
 const app = express();
 app.use(
