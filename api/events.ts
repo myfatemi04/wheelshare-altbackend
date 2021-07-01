@@ -1,3 +1,4 @@
+import { AssertionError } from "assert";
 import {
   calculateRecurringEventEndTime,
   calculateSingleEventEndTime,
@@ -32,6 +33,10 @@ export async function create({
   placeId,
   daysOfWeek,
 }: EventInit) {
+  if (duration < 0) {
+    throw new AssertionError({ message: "duration cannot be negative" });
+  }
+
   const placeDetails = await getPlaceDetails(placeId);
   if (placeDetails == null) {
     throw new Error("invalid placeId");
