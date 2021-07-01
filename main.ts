@@ -11,9 +11,31 @@ import CustomRouter from "./customrouter";
 import { getPlaceDetails } from "./googlemaps";
 import { T } from "./validate";
 
+const { AuthorizationCode } = require('simple-oauth2');
+const session = require('cookie-session');
+
 const prisma = new PrismaClient();
 
 const rtr = new CustomRouter();
+
+const ion_client_id = 'ojfWWAyRyfTpNB4tNUKjcYTVytpi7moNt21M857O';
+const ion_redirect_uri = 'http://localhost/';
+const client = new AuthorizationCode({
+    client: {
+        id: ion_client_id,
+        secret: process.env.ION_CLIENT_SECRET
+    },
+    auth: {
+        tokenHost: 'https://ion.tjhsst.edu/oauth/',
+        authorizePath: 'https://ion.tjhsst.edu/oauth/authorize',
+        tokenPath: 'https://ion.tjhsst.edu/oauth/token/'
+    }
+});
+
+const authorizationUri = client.authorizeURL({
+  scope: 'read',
+  redirect_uri: ion_redirect_uri
+});
 
 rtr.get("/users/@me/groups", (req) =>
   api.users.getGroups(
@@ -111,6 +133,11 @@ rtr.get("/groups", () => api.groups.all());
 rtr.post("/groups", (req) => api.groups.create(assertGroupInit(req.body)));
 rtr.post("/events", (req) => api.events.create(assertEventInit(req.body)));
 
+rtr.post("/send_invite", () => {});
+rtr.post("/accept_invite", () => {});
+rtr.post("/send_request", () => {});
+rtr.post("/accept_request", () => {});
+
 const app = express();
 app.use(
   cors({
@@ -119,6 +146,42 @@ app.use(
 );
 app.use(json());
 app.use("/api", authenticate, rtr.expressRouter);
+app.set('trust proxy', 1);
+app.use(express.static('static'));
+app.use(session({
+  name: 'cookies',
+  keys: ['mysecret']
+}));
+
+async function handleCode(req, res, next) {
+  var code = req.query.code;
+
+  var options = {
+      code: code,
+      redirect_uri: ion_redirect_uri,
+      scope: 'read'
+  };
+
+  try {
+      var accessToken = await client.getToken(options);
+      console.log(accessToken);
+      res.locals.token = accessToken.token;
+      next();
+  }
+  catch(error) {
+      console.log('Access Token Error: ', error.message);
+      res.send(502);
+  }
+};
+
+app.get('/oauth_verified', handleCode, function(req, res) {
+  // @ts-ignore
+  req.session.authenticated = true;
+  // @ts-ignore
+  req.session.token = res.locals.token;
+  // @ts-ignore
+  res.redirect('./');
+});
 
 async function main() {
   const PORT = 5000;
