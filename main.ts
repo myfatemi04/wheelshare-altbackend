@@ -119,7 +119,7 @@ rtr.get("/groups/:id/events", async (req) => {
 
 rtr.get("/groups", () => api.groups.all());
 rtr.post("/groups", (req) => api.groups.create(assertGroupInit(req.body)));
-rtr.post("/events", (req) => api.events.create(assertEventInit(req.body)));
+// rtr.post("/events", (req) => api.events.create(assertEventInit(req.body)));
 
 const app = express();
 app.use(

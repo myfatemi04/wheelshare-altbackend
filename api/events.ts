@@ -27,6 +27,10 @@ export async function create({
     throw new Error("invalid placeId");
   }
   const { latitude, longitude, formattedAddress } = placeDetails;
+
+  throw new Error("not implemented");
+
+  /*
   return await prisma.event.create({
     select: {
       id: true,
@@ -46,6 +50,7 @@ export async function create({
       formattedAddress,
     },
   });
+  */
 }
 
 export async function signups(id: number) {
