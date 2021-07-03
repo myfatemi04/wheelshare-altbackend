@@ -1,20 +1,28 @@
-import { randomUUID } from "crypto";
-
 export interface Session {
   userId: number;
 }
 
-class SessionManager {
-  private sessions: Record<string, Session>;
+const letters =
+  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-  constructor() {}
+function random(): string {
+  let id = "";
+  for (let i = 0; i < 32; i++) {
+    const idx = Math.floor(Math.random() * letters.length);
+    id += letters[idx];
+  }
+  return id;
+}
+
+class SessionManager {
+  private sessions: Record<string, Session> = {};
 
   getSession(id: string): Session | null {
     return this.sessions[id] ?? null;
   }
 
   createSession(userId: number): string {
-    const id = randomUUID();
+    const id = random();
     this.sessions[id] = {
       userId,
     };
