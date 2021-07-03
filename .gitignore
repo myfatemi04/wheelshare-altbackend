@@ -1,2 +1,5 @@
 .env
 node_modules
+prisma/wheelshare.db
+prisma/wheelshare.db-journal
+prisma/migrations

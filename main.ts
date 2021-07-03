@@ -10,6 +10,7 @@ import authenticate from "./authenticate";
 import CustomRouter from "./customrouter";
 import { getPlaceDetails } from "./googlemaps";
 import { T } from "./validate";
+import { signups, EventInit } from "./api/events";
 
 const { AuthorizationCode } = require('simple-oauth2');
 const session = require('cookie-session');
@@ -38,15 +39,24 @@ const authorizationUri = client.authorizeURL({
 });
 
 rtr.get("/users/@me/groups", (req) =>
-  api.users.getGroups(
+  api.users.groups(
     // @ts-expect-error
     req.session.userId
   )
 );
 
-rtr.get("/events", api.events.getAll);
+rtr.get("/events", api.events.all);
 
 rtr.get("/place/:id", (req) => getPlaceDetails(req.params.id));
+
+rtr.get("/events/:id/signups", async (req) => {
+  const id = +req.params.id;
+  if (!isFinite(id)) {
+    throw new AssertionError({ message: "id is not number" });
+  }
+
+  return await signups(id);
+});
 
 const assertEventSignupInit = T.object({
   placeId: T.string(),
@@ -85,12 +95,21 @@ rtr.delete("/events/:id/signup", async (req) => {
   await api.signups.delete(id, userId);
 });
 
-const assertEventInit = T.object({
+const assertEventInit: (v: any) => EventInit = T.object({
   name: T.string(),
   startTime: T.date(),
-  endTime: T.date(),
+  duration: T.number(),
   placeId: T.string(),
   groupId: T.optional(T.number()),
+  endDate: T.anyOf([T.date(), T.exact<null>(null)]),
+  daysOfWeek: (d) => {
+    if (typeof d === "number" && isFinite(d)) {
+      if (Number.isInteger(d) && d <= 0b0111_1111 && d >= 0b0000_0000) {
+        return d;
+      }
+    }
+    throw new AssertionError({ message: "expected 0b0XXX_XXXX" });
+  },
 });
 
 const assertGroupInit = T.object({

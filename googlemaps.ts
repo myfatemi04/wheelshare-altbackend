@@ -4,6 +4,14 @@ const googleAPIKey = process.env.GOOGLE_API_KEY;
 const placeFields = ["formatted_address", "geometry"].join(",");
 const placeCache = {};
 
+if (googleAPIKey == null || googleAPIKey.length === 0) {
+  console.error(
+    "The Google API Key is not loaded. Please make sure to add the line GOOGLE_API_KEY={...} in a file named `.env` in the root folder."
+  );
+
+  process.exit(1);
+}
+
 export async function getPlaceDetails(placeId: string) {
   if (placeId == null) {
     console.warn("placeID was null");

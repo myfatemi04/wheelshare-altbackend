@@ -9,11 +9,45 @@ generator client {
 }
 
 model User {
-  id      Int           @id @default(autoincrement())
-  email   String        @unique
-  name    String?
-  groups  Group[]       @relation(references: [id])
-  signups EventSignup[]
+  id          Int           @id @default(autoincrement())
+  email       String        @unique
+  name        String?
+  groups      Group[]       @relation(references: [id])
+  signups     EventSignup[]
+  // Currently-joined carpools.
+  carpools    Carpool[]
+  // Invitations to carpools and active requests.
+  invitations Invitation[]
+}
+
+model Invitation {
+  // If this is a request, this is the user requesting to join the carpool
+  // If this is an invitation, this is the user being invited
+  // userId and carpoolId will be enough to distinguish between Invitations
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  carpool   Carpool @relation(fields: [carpoolId], references: [id])
+  carpoolId Int
+
+  // If true, a user requested to join the carpool
+  isRequest Boolean
+
+  // When the invitation was first sent
+  sentTime DateTime
+
+  @@id([userId, carpoolId])
+}
+
+model Carpool {
+  id          Int          @id @default(autoincrement())
+  // Default "creatorName's carpool"
+  name        String
+  members     User[]
+  invitations Invitation[]
+
+  event   Event? @relation(fields: [eventId], references: [id])
+  eventId Int?
 }
 
 model Group {
@@ -24,19 +58,28 @@ model Group {
 }
 
 model Event {
-  id        Int      @id @default(autoincrement())
-  name      String
-  groupId   Int
-  group     Group    @relation(fields: groupId, references: [id])
+  id      Int    @id @default(autoincrement())
+  name    String
+  groupId Int
+  group   Group  @relation(fields: groupId, references: [id])
+
   startTime DateTime
-  endTime   DateTime
+  duration  Int // Minutes
+
+  // Default at startTime + duration
+  endTime DateTime?
+
+  // 00100000 & daysOfWeek = 00100000 !== 0 --> Mondays
+  // 0SMTWTFS
+  daysOfWeek Int
 
   placeId          String
   formattedAddress String
   latitude         Float
   longitude        Float
 
-  signups EventSignup[]
+  signups  EventSignup[]
+  carpools Carpool[]
 }
 
 model EventSignup {
