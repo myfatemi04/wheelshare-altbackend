@@ -14,6 +14,19 @@ import { getPlaceDetails } from "./googlemaps";
 import sessions from "./sessions";
 import { T } from "./validate";
 
+const requiredEnvironmentVariables = [
+  "GOOGLE_API_KEY",
+  "ION_CLIENT_ID",
+  "ION_CLIENT_SECRET",
+];
+
+for (let env of requiredEnvironmentVariables) {
+  if (!(env in process.env)) {
+    console.error(`FATAL: Required environment variable ${env} was not found`);
+    process.exit(1);
+  }
+}
+
 const prisma = new PrismaClient();
 
 const rtr = new CustomRouter();
