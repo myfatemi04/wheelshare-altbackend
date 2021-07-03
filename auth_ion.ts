@@ -85,7 +85,7 @@ export async function getIonProfile(code: string): Promise<IonProfile> {
   return json;
 }
 
-export async function getAccountIDFromIonCode(code: string): Promise<number> {
+export async function getUserIdFromIonCode(code: string): Promise<number> {
   const profile = await getIonProfile(code);
   const user = await prisma.user.findFirst({
     where: { email: profile.tj_email },

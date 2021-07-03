@@ -1,44 +1,23 @@
-import "dotenv/config";
-
 import { PrismaClient } from "@prisma/client";
 import { AssertionError } from "assert";
 import { json } from "body-parser";
 import cors from "cors";
+import "dotenv/config";
 import express from "express";
 import api from "./api";
-import authenticate from "./authenticate";
+import { EventInit, signups } from "./api/events";
+import authenticate, { session } from "./authenticate";
+import { getUserIdFromIonCode as getUserIdFromIonCode } from "./auth_ion";
 import CustomRouter from "./customrouter";
 import { getPlaceDetails } from "./googlemaps";
-import { T } from "./validate";
-import { signups, EventInit } from "./api/events";
 import sessions from "./sessions";
-import { getAccountIDFromIonCode, getIonProfile } from "./auth_ion";
+import { T } from "./validate";
 
-const { AuthorizationCode } = require("simple-oauth2");
-const session = require("cookie-session");
+// import session from "express-session";
 
 const prisma = new PrismaClient();
 
 const rtr = new CustomRouter();
-
-const ion_client_id = "ojfWWAyRyfTpNB4tNUKjcYTVytpi7moNt21M857O";
-const ion_redirect_uri = "http://localhost/";
-const client = new AuthorizationCode({
-  client: {
-    id: ion_client_id,
-    secret: process.env.ION_CLIENT_SECRET,
-  },
-  auth: {
-    tokenHost: "https://ion.tjhsst.edu/oauth/",
-    authorizePath: "https://ion.tjhsst.edu/oauth/authorize",
-    tokenPath: "https://ion.tjhsst.edu/oauth/token/",
-  },
-});
-
-const authorizationUri = client.authorizeURL({
-  scope: "read",
-  redirect_uri: ion_redirect_uri,
-});
 
 rtr.get("/users/@me/groups", (req) =>
   api.users.groups(
@@ -159,6 +138,16 @@ rtr.post("/accept_invite", () => {});
 rtr.post("/send_request", () => {});
 rtr.post("/accept_request", () => {});
 
+rtr.get("/users/@me", async (req) => {
+  // @ts-expect-error
+  const userId: number = req.session.userId;
+  if (!isFinite(userId)) {
+    return null;
+  }
+  const user = await prisma.user.findFirst({ where: { id: userId } });
+  return user;
+});
+
 const app = express();
 app.use(
   cors({
@@ -166,35 +155,20 @@ app.use(
   })
 );
 app.use(json());
+app.use(session);
+// app.use(
+//   session({
+//     secret: process.env.SESSION_SECRET,
+//     saveUninitialized: false,
+//     resave: false,
+//   })
+// );
+app.use((req, res, next) => {
+  console.log(req.path, "--> session:", req.session);
+
+  next();
+});
 app.use("/api", authenticate, rtr.expressRouter);
-app.set("trust proxy", 1);
-app.use(express.static("static"));
-app.use(
-  session({
-    name: "cookies",
-    keys: ["mysecret"],
-  })
-);
-
-async function handleCode(req, res, next) {
-  var code = req.query.code;
-
-  var options = {
-    code: code,
-    redirect_uri: ion_redirect_uri,
-    scope: "read",
-  };
-
-  try {
-    var accessToken = await client.getToken(options);
-    console.log(accessToken);
-    res.locals.token = accessToken.token;
-    next();
-  } catch (error) {
-    console.log("Access Token Error: ", error.message);
-    res.send(502);
-  }
-}
 
 const assertSessionInit = T.object({
   code: T.string(),
@@ -203,8 +177,8 @@ const assertSessionInit = T.object({
 app.post("/create_session", async (req, res, next) => {
   const { code } = assertSessionInit(req.body);
   try {
-    const accountId = await getAccountIDFromIonCode(code);
-    const sessionId = sessions.createSession(accountId);
+    const userId = await getUserIdFromIonCode(code);
+    const sessionId = sessions.createSession(userId);
 
     res.json({
       status: "success",

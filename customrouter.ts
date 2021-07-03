@@ -1,6 +1,6 @@
 import { AssertionError } from "assert";
 import { Request, RequestHandler, Router } from "express";
-import { ParamsDictionary, RouteParameters } from "express-serve-static-core";
+import { RouteParameters } from "express-serve-static-core";
 
 export default class CustomRouter {
   constructor(public readonly expressRouter: Router = Router()) {}
