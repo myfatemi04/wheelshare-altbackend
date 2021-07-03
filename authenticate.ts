@@ -10,6 +10,7 @@ export function session(req: Request, res: Response, next: NextFunction) {
     // @ts-expect-error
     req.session = session;
   } else {
+    // @ts-expect-error
     req.session = null;
   }
   next();
@@ -20,6 +21,7 @@ export default function authenticate(
   res: Response,
   next: NextFunction
 ) {
+  // @ts-expect-error
   if (req.session) {
     next();
   } else {

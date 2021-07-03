@@ -1,8 +1,9 @@
+import "dotenv/config";
+
 import { PrismaClient } from "@prisma/client";
 import { AssertionError } from "assert";
 import { json } from "body-parser";
 import cors from "cors";
-import "dotenv/config";
 import express from "express";
 import api from "./api";
 import { EventInit, signups } from "./api/events";
@@ -12,8 +13,6 @@ import CustomRouter from "./customrouter";
 import { getPlaceDetails } from "./googlemaps";
 import sessions from "./sessions";
 import { T } from "./validate";
-
-// import session from "express-session";
 
 const prisma = new PrismaClient();
 
@@ -164,6 +163,7 @@ app.use(session);
 //   })
 // );
 app.use((req, res, next) => {
+  // @ts-expect-error
   console.log(req.path, "--> session:", req.session);
 
   next();
@@ -174,7 +174,7 @@ const assertSessionInit = T.object({
   code: T.string(),
 });
 
-app.post("/create_session", async (req, res, next) => {
+app.post("/create_session", async (req, res) => {
   const { code } = assertSessionInit(req.body);
   try {
     const userId = await getUserIdFromIonCode(code);
