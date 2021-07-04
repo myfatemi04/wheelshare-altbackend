@@ -15,8 +15,14 @@ export function update({
   longitude: number;
   placeId: string;
 }) {
-  return prisma.eventSignup.create({
-    data: {
+  return prisma.eventSignup.upsert({
+    where: {
+      eventId_userId: {
+        eventId,
+        userId,
+      },
+    },
+    create: {
       event: {
         connect: {
           id: eventId,
@@ -27,6 +33,12 @@ export function update({
           id: userId,
         },
       },
+      formattedAddress,
+      latitude,
+      longitude,
+      placeId,
+    },
+    update: {
       formattedAddress,
       latitude,
       longitude,
