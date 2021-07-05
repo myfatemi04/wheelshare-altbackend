@@ -7,14 +7,13 @@ export default class CustomRouter {
   private createCallback<T, P>(cb: (req: Request<P>) => T | Promise<T>) {
     const newCallback: RequestHandler = async (req, res) => {
       try {
-        let result = cb(
+        let resultTmp = cb(
           // @ts-ignore
           req
         );
+        let result = resultTmp instanceof Promise ? await resultTmp : resultTmp;
         if (typeof result === "undefined") {
           res.json({ status: "success" });
-        } else if (result instanceof Promise) {
-          res.json(await result);
         } else {
           res.json(result);
         }
