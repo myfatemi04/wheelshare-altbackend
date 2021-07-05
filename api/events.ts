@@ -80,6 +80,18 @@ export async function create({
 
 export async function signups(id: number) {
   const signups = await prisma.eventSignup.findMany({
+    select: {
+      latitude: true,
+      longitude: true,
+      placeId: true,
+      formattedAddress: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
     where: {
       eventId: id,
     },
