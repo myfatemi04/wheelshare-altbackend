@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 
 const googleAPIKey = process.env.GOOGLE_API_KEY;
 const placeFields = ["formatted_address", "geometry"].join(",");
-const placeCache = {};
+const placeCache: Record<string, PlaceDetails> = {};
 
 if (googleAPIKey == null || googleAPIKey.length === 0) {
   console.error(
@@ -12,7 +12,13 @@ if (googleAPIKey == null || googleAPIKey.length === 0) {
   process.exit(1);
 }
 
-export async function getPlaceDetails(placeId: string) {
+export type PlaceDetails = {
+  formattedAddress: string;
+  latitude: number;
+  longitude: number;
+};
+
+export async function getPlaceDetails(placeId: string): Promise<PlaceDetails> {
   if (placeId == null) {
     console.warn("placeID was null");
     return null;
