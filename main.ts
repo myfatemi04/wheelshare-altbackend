@@ -151,6 +151,19 @@ rtr.get("/users/@me", async (req) => {
   return user;
 });
 
+rtr.get("/carpools/:id/invitations_and_requests", async (req) => {
+  // @ts-expect-error
+  const userId: number = req.session.userId;
+  const userIsInCarpool = await api.carpools.has(+req.params.id, userId);
+  if (!userIsInCarpool) {
+    throw new Error("user is not in carpool");
+  }
+  const invitationsAndRequests = await api.carpools.invitationsAndRequests(
+    +req.params.id
+  );
+  return invitationsAndRequests;
+});
+
 const app = express();
 app.use(
   cors({
