@@ -281,12 +281,13 @@ app.use("/api", authenticate, rtr.expressRouter);
 
 const assertSessionInit = T.object({
 	code: T.string(),
+	redirectUrl: T.string(),
 });
 
 app.post("/create_session", async (req, res) => {
-	const { code } = assertSessionInit(req.body);
+	const { code, redirectUrl } = assertSessionInit(req.body);
 	try {
-		const userId = await getUserIdFromIonCode(code);
+		const userId = await getUserIdFromIonCode(code, redirectUrl);
 		const sessionId = sessions.createSession(userId);
 
 		res.json({
