@@ -1,119 +1,119 @@
 import prisma from "./prisma";
 
 export function groups(userId: number) {
-  return prisma.group.findMany({
-    where: {
-      users: {
-        some: {
-          id: userId,
-        },
-      },
-    },
-  });
+	return prisma.group.findMany({
+		where: {
+			users: {
+				some: {
+					id: userId,
+				},
+			},
+		},
+	});
 }
 
 export function allEvents(userId: number) {
-  return prisma.event.findMany({
-    // where some of the group's users have the id `userId`
-    where: {
-      AND: [
-        {
-          group: {
-            users: {
-              some: {
-                id: userId,
-              },
-            },
-          },
-        },
-        {
-          OR: [
-            {
-              endTime: {
-                equals: null,
-              },
-            },
-            {
-              endTime: {
-                lt: new Date(),
-              },
-            },
-          ],
-        },
-      ],
-    },
-  });
+	return prisma.event.findMany({
+		// where some of the group's users have the id `userId`
+		where: {
+			AND: [
+				{
+					group: {
+						users: {
+							some: {
+								id: userId,
+							},
+						},
+					},
+				},
+				{
+					OR: [
+						{
+							endTime: {
+								equals: null,
+							},
+						},
+						{
+							endTime: {
+								lt: new Date(),
+							},
+						},
+					],
+				},
+			],
+		},
+	});
 }
 
 export function activeEvents(userId: number) {
-  return prisma.event.findMany({
-    // where some of the group's users have the id `userId`
-    where: {
-      group: {
-        users: {
-          some: {
-            id: userId,
-          },
-        },
-      },
-    },
-  });
+	return prisma.event.findMany({
+		// where some of the group's users have the id `userId`
+		where: {
+			group: {
+				users: {
+					some: {
+						id: userId,
+					},
+				},
+			},
+		},
+	});
 }
 
 export async function sentRequests(id: number) {
-  const requests = await prisma.invitation.findMany({
-    select: {
-      userId: true,
-      carpoolId: true,
-      sentTime: true
-    },
-    where: {
-      userId: id,
-      isRequest: true
-    }
+	const requests = await prisma.invitation.findMany({
+		select: {
+			userId: true,
+			carpoolId: true,
+			sentTime: true,
+		},
+		where: {
+			userId: id,
+			isRequest: true,
+		},
 	});
-  
-  return requests;
+
+	return requests;
 }
 
 export async function receivedInvitations(id: number) {
-  const invitations = await prisma.invitation.findMany({
-    select: {
-      userId: true,
-	    carpoolId: true,
-      sentTime: true
-    },
-    where: {
-      userId: id,
-      isRequest: false
-    }
-  });
-  
-  return invitations;
+	const invitations = await prisma.invitation.findMany({
+		select: {
+			userId: true,
+			carpoolId: true,
+			sentTime: true,
+		},
+		where: {
+			userId: id,
+			isRequest: false,
+		},
+	});
+
+	return invitations;
 }
 
 export async function receivedRequests(id: number) {
-  const requests = await prisma.invitation.findMany({
-    select: {
-      userId: true,
-      carpoolId: true,
-			sentTime: true
-    },
-    where: {
-      carpool: {
-        members: {
-          some: {
-            id
-          }
-        }
-      }
-  	}
-  });
-  
-  return requests;
+	const requests = await prisma.invitation.findMany({
+		select: {
+			userId: true,
+			carpoolId: true,
+			sentTime: true,
+		},
+		where: {
+			carpool: {
+				members: {
+					some: {
+						id,
+					},
+				},
+			},
+		},
+	});
+
+	return requests;
 }
 
-export async function sentInvitation(id: number) {
+export async function sentInvitations(id: number) {
 	const invitations = await prisma.invitation.findMany({
 		select: {
 			userId: true,
@@ -124,11 +124,11 @@ export async function sentInvitation(id: number) {
 			carpool: {
 				members: {
 					some: {
-						id
-					}
-				}
-			}
-		}
+						id,
+					},
+				},
+			},
+		},
 	});
 
 	return invitations;
