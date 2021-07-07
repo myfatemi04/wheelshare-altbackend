@@ -60,7 +60,7 @@ export function activeEvents(userId: number) {
   });
 }
 
-export async function requests(id: number) {
+export async function sentRequests(id: number) {
   const requests = await prisma.invitation.findMany({
       select: {
           userId: true,
@@ -76,7 +76,7 @@ export async function requests(id: number) {
   return requests;
 }
 
-export async function invitations(id: number) {
+export async function receivedInvitations(id: number) {
   const invitations = await prisma.invitation.findMany({
       select: {
           userId: true,
@@ -90,4 +90,46 @@ export async function invitations(id: number) {
   });
   
   return invitations;
+}
+
+export async function receivedRequests(id: number) {
+  const requests = await prisma.invitation.findMany({
+      select: {
+          userId: true,
+          carpoolId: true,
+          sentTime: true
+      },
+      where: {
+          carpool: {
+            members: {
+              some: {
+                id
+              }
+            }
+          }
+      }
+  });
+  
+  return requests;
+}
+
+export async function sentInvitation(id: number) {
+	const invitations = await prisma.invitation.findMany({
+		select: {
+			userId: true,
+			carpoolId: true,
+			sentTime: true,
+		},
+		where: {
+			carpool: {
+				members: {
+					some: {
+						id
+					}
+				}
+			}
+		}
+	});
+
+	return invitations;
 }
