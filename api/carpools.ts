@@ -13,6 +13,10 @@ export async function isModerator(
 	carpoolId: number,
 	memberId: number
 ): Promise<boolean> {
+	return await isMember(carpoolId, memberId);
+}
+
+export async function isMember(carpoolId: number, memberId: number) {
 	const count = await prisma.carpool.count({
 		where: {
 			id: carpoolId,
