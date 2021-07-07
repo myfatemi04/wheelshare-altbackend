@@ -100,6 +100,29 @@ const assertGroupInit = T.object({
 	name: T.string(),
 });
 
+rtr.get(
+	"/resolve_code/:code",
+	async (req) => await api.groups.forCode(req.params.code)
+);
+
+const assertGroupJoinInit = T.object({
+	code: T.string(),
+});
+rtr.post("/groups/:id/join", async (req) => {
+	const { code } = assertGroupJoinInit(req.body);
+	const groupId = +req.params.id;
+	// @ts-expect-error
+	const userId: number = req.session.userId;
+	const correctCode = await api.groups.getCode(groupId);
+	if (correctCode == null) {
+		throw new Error("this group cannot be joined via a join code");
+	}
+	if (correctCode !== code) {
+		throw new Error("incorrect code");
+	}
+	await api.groups.addUser(groupId, userId);
+});
+
 rtr.get("/groups/:id", async (req) => {
 	const id = +req.params.id;
 	if (isNaN(id)) {
@@ -304,7 +327,7 @@ app.post("/create_session", async (req, res) => {
 });
 
 async function main() {
-	const PORT = 5000;
+	const PORT = process.env.PORT ?? 5000;
 	app.listen(PORT, () => {
 		console.log(`Running on [:${PORT}]`);
 	});
