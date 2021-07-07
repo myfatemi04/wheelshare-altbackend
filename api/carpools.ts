@@ -73,3 +73,13 @@ export async function active(id: number) {
 	
 	return active;
 }
+
+export async function get(id: number) {
+	const carpool = await prisma.carpool.findFirst({
+		where: {
+			id
+		}
+	});
+
+	return carpool;
+}
