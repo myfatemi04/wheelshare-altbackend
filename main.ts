@@ -203,6 +203,17 @@ rtr.post("/carpools/:id/invite", async (req) => {
 	});
 });
 
+rtr.post("/carpools/:id/accept_invite", async (req) => {
+	// @ts-expect-error
+	const userId: number = req.session.userId;
+	const carpoolId = +req.params.id;
+
+	await api.invitations.execute({
+		userId,
+		carpoolId,
+	});
+});
+
 rtr.get("/carpools/:id/invitations_and_requests", async (req) => {
 	// @ts-expect-error
 	const userId: number = req.session.userId;
