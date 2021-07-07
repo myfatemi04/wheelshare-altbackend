@@ -88,10 +88,10 @@ model EventSignup {
   userId  Int
   user    User  @relation(fields: userId, references: [id])
 
-  placeId          String
-  formattedAddress String
-  latitude         Float
-  longitude        Float
+  placeId          String?
+  formattedAddress String?
+  latitude         Float?
+  longitude        Float?
 
   @@id([eventId, userId])
 }

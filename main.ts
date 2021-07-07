@@ -52,7 +52,7 @@ rtr.get("/events/:id/signups", async (req) => {
 });
 
 const assertEventSignupInit = T.object({
-  placeId: T.string(),
+  placeId: T.nullable(T.string()),
 });
 
 rtr.post("/events/:id/signup", async (req) => {
@@ -64,18 +64,9 @@ rtr.post("/events/:id/signup", async (req) => {
   }
 
   const { placeId } = assertEventSignupInit(req.body);
-  const details = await getPlaceDetails(placeId);
-  if (!details) {
-    throw new Error("placeid was invalid");
-  }
-
-  const { latitude, longitude, formattedAddress } = details;
   await api.signups.update({
     eventId: id,
     userId,
-    latitude,
-    longitude,
-    formattedAddress,
     placeId,
   });
 });
@@ -168,16 +159,9 @@ app.use(
 );
 app.use(json());
 app.use(session);
-// app.use(
-//   session({
-//     secret: process.env.SESSION_SECRET,
-//     saveUninitialized: false,
-//     resave: false,
-//   })
-// );
 app.use((req, res, next) => {
   // @ts-expect-error
-  console.log(req.path, "--> session:", req.session);
+  console.log(req.method.toUpperCase(), req.path, "--> session:", req.session);
 
   next();
 });

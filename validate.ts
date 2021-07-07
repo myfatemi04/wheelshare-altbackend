@@ -124,6 +124,14 @@ export const T = {
       return checker(x);
     };
   },
+  nullable<T>(checker: (...args: any) => T) {
+    return (x: any): T | null => {
+      if (x === null) {
+        return x;
+      }
+      return checker(x);
+    };
+  },
   object<T extends Record<string, (...args: any) => any>>(
     schema: T,
     allowOtherKeys = false

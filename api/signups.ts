@@ -1,21 +1,24 @@
+import { getPlaceDetails, PlaceDetails } from "../googlemaps";
 import prisma from "./prisma";
 
-export function update({
+export async function update({
   eventId,
   userId,
-  formattedAddress,
-  longitude,
-  latitude,
   placeId,
 }: {
   eventId: number;
   userId: number;
-  formattedAddress: string;
-  latitude: number;
-  longitude: number;
-  placeId: string;
+  placeId: string | null;
 }) {
-  return prisma.eventSignup.upsert({
+  let details: PlaceDetails | {} = {};
+  if (typeof placeId === "string") {
+    details = await getPlaceDetails(placeId);
+    if (!details) {
+      throw new Error("placeid was invalid");
+    }
+  }
+
+  return await prisma.eventSignup.upsert({
     where: {
       eventId_userId: {
         eventId,
@@ -33,16 +36,12 @@ export function update({
           id: userId,
         },
       },
-      formattedAddress,
-      latitude,
-      longitude,
       placeId,
+      ...details,
     },
     update: {
-      formattedAddress,
-      latitude,
-      longitude,
       placeId,
+      ...details,
     },
   });
 }
