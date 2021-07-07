@@ -1,4 +1,5 @@
 import prisma from "./prisma";
+import { createJoinCode } from "../joincode";
 
 export async function one(id: number) {
   return await prisma.group.findFirst({
@@ -45,5 +46,16 @@ export async function create({ name }: { name: string }) {
     data: {
       name,
     },
+  });
+}
+
+export async function joinCode(id: number) {
+  return await prisma.group.update({
+    where: {
+      id
+    },
+    data: {
+      joinCode: createJoinCode()
+    }
   });
 }
