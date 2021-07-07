@@ -63,9 +63,20 @@ export function activeEvents(userId: number) {
 export async function sentRequests(id: number) {
 	const requests = await prisma.invitation.findMany({
 		select: {
-			userId: true,
-			carpoolId: true,
+			user: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
+			carpool: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
 			sentTime: true,
+			isRequest: true,
 		},
 		where: {
 			userId: id,
@@ -79,9 +90,20 @@ export async function sentRequests(id: number) {
 export async function receivedInvitations(id: number) {
 	const invitations = await prisma.invitation.findMany({
 		select: {
-			userId: true,
-			carpoolId: true,
+			user: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
+			carpool: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
 			sentTime: true,
+			isRequest: true,
 		},
 		where: {
 			userId: id,
@@ -95,9 +117,20 @@ export async function receivedInvitations(id: number) {
 export async function receivedRequests(id: number) {
 	const requests = await prisma.invitation.findMany({
 		select: {
-			userId: true,
-			carpoolId: true,
+			user: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
+			carpool: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
 			sentTime: true,
+			isRequest: true,
 		},
 		where: {
 			carpool: {
@@ -116,9 +149,20 @@ export async function receivedRequests(id: number) {
 export async function sentInvitations(id: number) {
 	const invitations = await prisma.invitation.findMany({
 		select: {
-			userId: true,
-			carpoolId: true,
+			user: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
+			carpool: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
 			sentTime: true,
+			isRequest: true,
 		},
 		where: {
 			carpool: {

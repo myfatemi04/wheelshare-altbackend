@@ -227,6 +227,16 @@ rtr.get("/carpools/:id/invitations_and_requests", async (req) => {
 	return invitationsAndRequests;
 });
 
+rtr.get("/users/@me/received_requests_and_invites", async (req) => {
+	// @ts-expect-error
+	const userId: number = req.session.userId;
+
+	const requests = await api.users.receivedRequests(userId);
+	const invites = await api.users.receivedInvitations(userId);
+
+	return [...requests, ...invites];
+});
+
 const app = express();
 app.use(
 	cors({
