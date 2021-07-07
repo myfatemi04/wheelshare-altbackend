@@ -112,3 +112,14 @@ export async function joinCode(id: number) {
     }
   });
 }
+
+export async function resetCode(id: number) {
+  return await prisma.group.update({
+    where: {
+      id
+    },
+    data: {
+      joinCode: null
+    }
+  });
+}
