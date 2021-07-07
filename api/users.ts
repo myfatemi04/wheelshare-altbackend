@@ -62,31 +62,31 @@ export function activeEvents(userId: number) {
 
 export async function sentRequests(id: number) {
   const requests = await prisma.invitation.findMany({
-      select: {
-          userId: true,
-          carpoolId: true,
-          sentTime: true
-      },
-      where: {
-          userId: id,
-          isRequest: true
-      }
-  });
+    select: {
+      userId: true,
+      carpoolId: true,
+      sentTime: true
+    },
+    where: {
+      userId: id,
+      isRequest: true
+    }
+	});
   
   return requests;
 }
 
 export async function receivedInvitations(id: number) {
   const invitations = await prisma.invitation.findMany({
-      select: {
-          userId: true,
-          carpoolId: true,
-          sentTime: true
-      },
-      where: {
-          userId: id,
-          isRequest: false
-      }
+    select: {
+      userId: true,
+	    carpoolId: true,
+      sentTime: true
+    },
+    where: {
+      userId: id,
+      isRequest: false
+    }
   });
   
   return invitations;
@@ -94,20 +94,20 @@ export async function receivedInvitations(id: number) {
 
 export async function receivedRequests(id: number) {
   const requests = await prisma.invitation.findMany({
-      select: {
-          userId: true,
-          carpoolId: true,
-          sentTime: true
-      },
-      where: {
-          carpool: {
-            members: {
-              some: {
-                id
-              }
-            }
+    select: {
+      userId: true,
+      carpoolId: true,
+			sentTime: true
+    },
+    where: {
+      carpool: {
+        members: {
+          some: {
+            id
           }
+        }
       }
+  	}
   });
   
   return requests;
