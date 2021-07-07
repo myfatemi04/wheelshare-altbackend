@@ -33,7 +33,6 @@ export async function create({
     });
   }
 }
-
 export async function execute({
   userId,
   carpoolId,
@@ -67,4 +66,20 @@ export async function execute({
       },
     },
   });
+}
+
+export async function invitations(id: number) {
+  const invitations = prisma.invitation.findMany({
+    select: {
+      userId: true,
+      carpoolId: true,
+      isRequest: true,
+      sentTime: true,
+    },
+    where: {
+      carpoolId: id,
+      userId: id,
+    },
+  });
+  return invitations;
 }

@@ -59,3 +59,35 @@ export function activeEvents(userId: number) {
     },
   });
 }
+
+export async function requests(id: number) {
+  const requests = await prisma.invitation.findMany({
+      select: {
+          userId: true,
+          carpoolId: true,
+          sentTime: true
+      },
+      where: {
+          userId: id,
+          isRequest: true
+      }
+  });
+  
+  return requests;
+}
+
+export async function invitations(id: number) {
+  const invitations = await prisma.invitation.findMany({
+      select: {
+          userId: true,
+          carpoolId: true,
+          sentTime: true
+      },
+      where: {
+          userId: id,
+          isRequest: false
+      }
+  });
+  
+  return invitations;
+}
