@@ -54,3 +54,22 @@ export async function visibleToUser(carpoolId: number, userId: number) {
 		},
 	});
 }
+
+export async function active(id: number) {
+	const active = await prisma.carpool.findMany({
+		where: {
+			members: {
+		  		some: {
+					id
+		  		}
+			},
+			event: {
+				endTime: {
+					lt: new Date()
+				}
+			}
+	  	}
+	});
+	
+	return active;
+}
