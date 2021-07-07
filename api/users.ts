@@ -12,7 +12,7 @@ export function groups(userId: number) {
 	});
 }
 
-export function allEvents(userId: number) {
+export function activeEvents(userId: number) {
 	return prisma.event.findMany({
 		// where some of the group's users have the id `userId`
 		where: {
@@ -45,7 +45,7 @@ export function allEvents(userId: number) {
 	});
 }
 
-export function activeEvents(userId: number) {
+export function allEvents(userId: number) {
 	return prisma.event.findMany({
 		// where some of the group's users have the id `userId`
 		where: {
