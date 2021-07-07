@@ -9,7 +9,7 @@ export async function invitationsAndRequests(
 	});
 }
 
-export async function has(
+export async function isModerator(
 	carpoolId: number,
 	memberId: number
 ): Promise<boolean> {

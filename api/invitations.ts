@@ -34,6 +34,19 @@ export async function create({
 	}
 }
 
+async function delete_(userId: number, carpoolId: number) {
+	return await prisma.invitation.delete({
+		where: {
+			userId_carpoolId: {
+				userId,
+				carpoolId,
+			},
+		},
+	});
+}
+
+export { delete_ as delete };
+
 export async function execute({
 	userId,
 	carpoolId,

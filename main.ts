@@ -171,9 +171,9 @@ rtr.post("/carpools/:id/accept_request", async (req) => {
 	// @ts-expect-error
 	const accepterId: number = req.session.userId;
 	const carpoolId = +req.params.id;
-	const isMember = api.carpools.has(carpoolId, accepterId);
+	const isMember = await api.carpools.isModerator(carpoolId, accepterId);
 	if (!isMember) {
-		throw new Error("not a member");
+		throw new Error("not a moderator");
 	}
 
 	// Execute the invitation for the requesterId in the given carpool
@@ -183,6 +183,24 @@ rtr.post("/carpools/:id/accept_request", async (req) => {
 	});
 });
 
+const assertDenyRequestInit = T.object({
+	userId: T.number(),
+});
+rtr.post("/carpools/:id/deny_request", async (req) => {
+	// @ts-expect-error
+	const denierId: number = req.session.userId;
+	const carpoolId = +req.params.id;
+
+	const { userId: requesterId } = assertDenyRequestInit(req.body);
+
+	const isModerator = await api.carpools.isModerator(carpoolId, denierId);
+	if (!isModerator) {
+		throw new Error("not a moderator");
+	}
+
+	await api.invitations.delete(requesterId, carpoolId);
+});
+
 const assertInviteInit = T.object({
 	userId: T.number(),
 });
@@ -190,9 +208,9 @@ rtr.post("/carpools/:id/invite", async (req) => {
 	const carpoolId = +req.params.id;
 	// @ts-expect-error
 	const inviterId: number = req.session.userId;
-	const isMember = await api.carpools.has(+req.params.id, inviterId);
+	const isMember = await api.carpools.isModerator(+req.params.id, inviterId);
 	if (!isMember) {
-		throw new Error("not a member");
+		throw new Error("not a moderator");
 	}
 
 	const { userId } = assertInviteInit(req.body);
@@ -214,12 +232,20 @@ rtr.post("/carpools/:id/accept_invite", async (req) => {
 	});
 });
 
+rtr.post("/carpools/:id/deny_invite", async (req) => {
+	// @ts-expect-error
+	const userId: number = req.session.userId;
+	const carpoolId = +req.params.id;
+
+	await api.invitations.delete(userId, carpoolId);
+});
+
 rtr.get("/carpools/:id/invitations_and_requests", async (req) => {
 	// @ts-expect-error
 	const userId: number = req.session.userId;
-	const userIsInCarpool = await api.carpools.has(+req.params.id, userId);
-	if (!userIsInCarpool) {
-		throw new Error("not a member");
+	const isMember = await api.carpools.isModerator(+req.params.id, userId);
+	if (!isMember) {
+		throw new Error("not a moderator");
 	}
 	const invitationsAndRequests = await api.carpools.invitationsAndRequests(
 		+req.params.id
