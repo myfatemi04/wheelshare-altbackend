@@ -308,6 +308,17 @@ rtr.get("/users/@me/received_requests_and_invites", async (req) => {
 	return [...requests, ...invites];
 });
 
+rtr.post("/groups/:id/generate_code", async (req) => {
+	// add group membership verification
+	const groupId: number = +req.params.id;
+	await api.groups.joinCode(groupId);
+});
+rtr.post("/groups/:id/reset_code", async (req) => {
+	// add group membership verification
+	const groupId: number = +req.params.id;
+	await api.groups.resetCode(groupId);
+});
+
 const app = express();
 app.use(
 	cors({
