@@ -169,12 +169,34 @@ rtr.get("/users/@me", async (req) => {
 	return user;
 });
 
+rtr.get("/carpools/:id", async (req) => {
+	const carpoolId = +req.params.id;
+	// @ts-expect-error
+	const requesterId: number = req.session.userId;
+	const visible = api.carpools.visibleToUser(carpoolId, requesterId);
+	if (!visible) {
+		throw new Error("no access to carpool");
+	}
+
+	return await prisma.carpool.findFirst({
+		select: {
+			id: true,
+			name: true,
+			members: true,
+			event: true,
+		},
+		where: {
+			id: carpoolId,
+		},
+	});
+});
+
 rtr.post("/carpools/:id/request", async (req) => {
 	const carpoolId = +req.params.id;
 	// @ts-expect-error
 	const requesterId: number = req.session.userId;
-	const canSeeCarpool = api.carpools.visibleToUser(carpoolId, requesterId);
-	if (!canSeeCarpool) {
+	const visible = api.carpools.visibleToUser(carpoolId, requesterId);
+	if (!visible) {
 		throw new Error("no access to carpool");
 	}
 
