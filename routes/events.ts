@@ -4,9 +4,11 @@ import { EventInit } from "../api/events";
 import CustomRouter from "../customrouter";
 import { T } from "../validate";
 
-const rtr = new CustomRouter();
+const events = new CustomRouter();
 
-rtr.get("/", api.events.all);
+export default events;
+
+events.get("/", api.events.all);
 
 const assertEventInit: (v: any) => EventInit = T.object({
 	name: T.string(),
@@ -24,9 +26,9 @@ const assertEventInit: (v: any) => EventInit = T.object({
 		throw new AssertionError({ message: "expected 0b0XXX_XXXX" });
 	},
 });
-rtr.post("/", (req) => api.events.create(assertEventInit(req.body)));
+events.post("/", (req) => api.events.create(assertEventInit(req.body)));
 
-rtr.get("/:id/signups", async (req) => {
+events.get("/:id/signups", async (req) => {
 	const id = +req.params.id;
 	if (!isFinite(id)) {
 		throw new AssertionError({ message: "id is not number" });
@@ -38,7 +40,7 @@ rtr.get("/:id/signups", async (req) => {
 const assertEventSignupInit = T.object({
 	placeId: T.nullable(T.string()),
 });
-rtr.post("/:id/signup", async (req) => {
+events.post("/:id/signup", async (req) => {
 	// @ts-expect-error
 	const userId = req.session.userId;
 	const id = +req.params.id;
@@ -54,7 +56,7 @@ rtr.post("/:id/signup", async (req) => {
 	});
 });
 
-rtr.delete("/:id/signup", async (req) => {
+events.delete("/:id/signup", async (req) => {
 	// @ts-expect-error
 	const userId = req.session.userId;
 	const id = +req.params.id;
