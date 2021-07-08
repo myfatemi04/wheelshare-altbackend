@@ -103,23 +103,23 @@ export async function create({ name }: { name: string }) {
 }
 
 export async function joinCode(id: number) {
-  return await prisma.group.update({
-    where: {
-      id
-    },
-    data: {
-      joinCode: createJoinCode()
-    }
-  });
+	return await prisma.group.update({
+		where: {
+			id,
+		},
+		data: {
+			joinCode: createJoinCode(),
+		},
+	});
 }
 
 export async function resetCode(id: number) {
-  return await prisma.group.update({
-    where: {
-      id
-    },
-    data: {
-      joinCode: null
-    }
-  });
+	return await prisma.group.update({
+		where: {
+			id,
+		},
+		data: {
+			joinCode: null,
+		},
+	});
 }
