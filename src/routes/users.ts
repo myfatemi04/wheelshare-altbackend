@@ -16,12 +16,8 @@ users.get("/@me", async (req) => {
 	return user;
 });
 
-users.get("/@me/groups", (req) =>
-	api.users.groups(
-		// @ts-expect-error
-		req.session.userId
-	)
-);
+// @ts-expect-error
+users.get("/@me/groups", (req) => api.users.groups(req.session.userId));
 
 users.get("/@me/received_requests_and_invites", async (req) => {
 	// @ts-expect-error

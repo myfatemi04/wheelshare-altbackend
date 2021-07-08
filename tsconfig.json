@@ -1,9 +1,10 @@
 {
-  "compilerOptions": {
-    "esModuleInterop": true
-  },
-  "files": ["./index.d.ts"],
-  "typeAcquisition": {
-    "include": ["jest"]
-  }
+	"compilerOptions": {
+		"esModuleInterop": true,
+		"outDir": "dist"
+	},
+	"include": ["src"],
+	"typeAcquisition": {
+		"include": ["jest"]
+	}
 }
