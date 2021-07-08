@@ -46,13 +46,13 @@ app.post("/create_session", async (req, res) => {
 	}
 });
 
-async function main() {
+try {
 	const PORT = process.env.PORT ?? 5000;
 	app.listen(PORT, () => {
 		console.log(`Running on [:${PORT}]`);
 	});
+} catch (e) {
+	console.error(e);
 }
 
-main()
-	.catch(console.error)
-	.finally(() => prisma.$disconnect());
+prisma.$disconnect();

@@ -83,9 +83,16 @@ export async function getIonProfile(
 		accessToken.token.access_token;
 
 	const res = await fetch(profileUrl);
-	const json = await res.json();
-
-	return json;
+	try {
+		const json = await res.json();
+		return json;
+	} catch (e) {
+		console.error(
+			"Error when converting ION response to JSON. Response code:",
+			res.status
+		);
+		console.error("Full error message:", e);
+	}
 }
 
 export async function getUserIdFromIonCode(
