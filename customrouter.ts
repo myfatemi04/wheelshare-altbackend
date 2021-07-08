@@ -3,15 +3,16 @@ import { Request, RequestHandler, Router } from "express";
 import { RouteParameters } from "express-serve-static-core";
 
 export default class CustomRouter {
-	constructor(public readonly expressRouter: Router = Router()) {}
+	public readonly expressRouter = Router();
 	private createCallback<T, P>(cb: (req: Request<P>) => T | Promise<T>) {
 		const newCallback: RequestHandler = async (req, res) => {
 			try {
-				let resultTmp = cb(
+				const resultTmp = cb(
 					// @ts-ignore
 					req
 				);
-				let result = resultTmp instanceof Promise ? await resultTmp : resultTmp;
+				const result =
+					resultTmp instanceof Promise ? await resultTmp : resultTmp;
 				if (typeof result === "undefined") {
 					res.json({ status: "success" });
 				} else {
