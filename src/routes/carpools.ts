@@ -29,6 +29,13 @@ carpools.get("/:id", async (req) => {
 	});
 });
 
+carpools.delete("/:id/request", async (req) => {
+	const carpoolId = +req.params.id;
+	// @ts-expect-error
+	const userId: number = req.session.id;
+	await api.invitations.delete(userId, carpoolId);
+});
+
 carpools.post("/:id/request", async (req) => {
 	const carpoolId = +req.params.id;
 	// @ts-expect-error
