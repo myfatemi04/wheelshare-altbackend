@@ -1,6 +1,59 @@
 import { Invitation } from "@prisma/client";
 import prisma from "./prisma";
 
+/**
+ * Creates a single-user carpool and returns the id of the created carpool
+ */
+// eslint-disable-next-line
+async function createAndInviteUser(
+	eventId: number,
+	creatorId: number,
+	inviteeId: number
+) {
+	// Check if a carpool already exists
+	const existingCarpool = await prisma.carpool.findFirst({
+		select: { id: true },
+		where: { members: { some: { id: creatorId } } },
+	});
+
+	return await prisma.invitation.create({
+		select: {
+			carpoolId: true,
+		},
+		data: {
+			// Create the carpool
+			carpool: !existingCarpool
+				? {
+						create: {
+							name: "Carpool",
+							members: {
+								// Add the initial members
+								connect: [{ id: creatorId }, { id: inviteeId }],
+							},
+							event: {
+								connect: {
+									id: eventId,
+								},
+							},
+						},
+				  }
+				: {
+						connect: {
+							id: existingCarpool.id,
+						},
+				  },
+			isRequest: false,
+			sentTime: new Date(),
+			// Invite the user
+			user: {
+				connect: {
+					id: inviteeId,
+				},
+			},
+		},
+	});
+}
+
 export async function invitationsAndRequests(
 	carpoolId: number
 ): Promise<Invitation[]> {
@@ -59,26 +112,26 @@ export async function active(id: number) {
 	const active = await prisma.carpool.findMany({
 		where: {
 			members: {
-		  		some: {
-					id
-		  		}
+				some: {
+					id,
+				},
 			},
 			event: {
 				endTime: {
-					lt: new Date()
-				}
-			}
-	  	}
+					lt: new Date(),
+				},
+			},
+		},
 	});
-	
+
 	return active;
 }
 
 export async function get(id: number) {
 	const carpool = await prisma.carpool.findFirst({
 		where: {
-			id
-		}
+			id,
+		},
 	});
 
 	return carpool;
