@@ -83,3 +83,34 @@ export async function get(id: number) {
 
 	return carpool;
 }
+
+export type CarpoolInit = {
+	name: string;
+	userId: number;
+	eventId: number;
+};
+
+export async function create({
+	name,
+	userId,
+	eventId
+}: CarpoolInit) {
+	return await prisma.carpool.create({
+		select: {
+			id: true
+		},
+		data: {
+			name,
+			members: {
+				connect: {
+					id: userId
+				}
+			},
+			event: {
+				connect: {
+					id: eventId
+				}
+			}
+		}
+	});
+}
