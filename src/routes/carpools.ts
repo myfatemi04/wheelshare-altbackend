@@ -123,6 +123,14 @@ carpools.post("/:id/deny_invite", async (req) => {
 	await api.invitations.delete(userId, carpoolId);
 });
 
+carpools.delete("/:id/invite", async (req) => {
+	// @ts-expect-error
+	const userId: number = req.session.userId;
+	const carpoolId = +req.params.id;
+
+	await api.invitations.delete(userId, carpoolId);
+});
+
 carpools.get("/:id/invitations_and_requests", async (req) => {
 	// @ts-expect-error
 	const userId: number = req.session.userId;
