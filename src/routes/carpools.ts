@@ -20,8 +20,24 @@ carpools.get("/:id", async (req) => {
 		select: {
 			id: true,
 			name: true,
-			members: true,
-			event: true,
+			eventId: true,
+			event: {
+				select: {
+					id: true,
+					name: true,
+					formattedAddress: true,
+					latitude: true,
+					longitude: true,
+					placeId: true
+				}
+			},
+			members: {
+				select: {
+					id: true,
+					name: true
+				}
+			},
+			invitations: true
 		},
 		where: {
 			id: carpoolId,
