@@ -13,10 +13,10 @@ model User {
   name        String?
   groups      Group[]       @relation(references: [id])
   signups     EventSignup[]
-  // Currently-joined carpools.
-  carpools    Carpool[]
   // Invitations to carpools and active requests.
   invitations Invitation[]
+
+  carpools Carpool[]
 }
 
 model Invitation {
@@ -45,15 +45,15 @@ model Carpool {
   members     User[]
   invitations Invitation[]
 
-  event   Event? @relation(fields: [eventId], references: [id])
-  eventId Int?
+  event   Event @relation(fields: [eventId], references: [id])
+  eventId Int
 }
 
 model Group {
-  id     Int     @id @default(autoincrement())
-  name   String
-  users  User[]  @relation(references: [id])
-  events Event[]
+  id       Int     @id @default(autoincrement())
+  name     String
+  users    User[]  @relation(references: [id])
+  events   Event[]
   joinCode String?
 }
 
