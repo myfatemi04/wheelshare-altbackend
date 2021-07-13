@@ -165,11 +165,39 @@ export async function create({ name, userId, eventId }: CarpoolInit) {
 }
 
 export async function delete_pool(carpoolId: number, userId: number) {
-	if(isModerator(carpoolId, userId)) {
+	if (isModerator(carpoolId, userId)) {
 		return await prisma.carpool.delete({
 			where: {
-				id: carpoolId
-			}
-		})
+				id: carpoolId,
+			},
+		});
+	}
+}
+
+export async function leave(carpoolId: number, userId: number) {
+	const { members } = await prisma.carpool.update({
+		where: {
+			id: carpoolId,
+		},
+		select: {
+			members: {
+				take: 1,
+			},
+		},
+		data: {
+			members: {
+				disconnect: {
+					id: userId,
+				},
+			},
+		},
+	});
+	if (members.length === 0) {
+		// Delete the carpool when all members have left
+		await prisma.carpool.delete({
+			where: {
+				id: carpoolId,
+			},
+		});
 	}
 }
