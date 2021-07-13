@@ -196,7 +196,8 @@ carpools.post("/", async (req) => {
 	// @ts-expect-error
 	const userId: number = req.session.userId;
 	const { eventId, name } = assertCarpoolInit(req.body);
-	await api.carpools.create({ userId, eventId, name });
+	const { id } = await api.carpools.create({ userId, eventId, name });
+	return { id };
 });
 
 // Leave a carpool
