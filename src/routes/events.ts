@@ -63,3 +63,10 @@ events.delete("/:id/signup", async (req) => {
 
 	await api.signups.delete(id, userId);
 });
+
+events.get("/:id", async (req) => {
+	// @ts-expect-error
+	const userId = req.session.userId;
+	const eventId = +req.params.id;
+	return await api.events.get(eventId);
+});
