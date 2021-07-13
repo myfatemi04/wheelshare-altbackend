@@ -28,16 +28,16 @@ carpools.get("/:id", async (req) => {
 					formattedAddress: true,
 					latitude: true,
 					longitude: true,
-					placeId: true
-				}
+					placeId: true,
+				},
 			},
 			members: {
 				select: {
 					id: true,
-					name: true
-				}
+					name: true,
+				},
 			},
-			invitations: true
+			invitations: true,
 		},
 		where: {
 			id: carpoolId,
@@ -171,8 +171,19 @@ carpools.delete("/:id", async (req) => {
 	// @ts-expect-error
 	const userId: number = req.session.userId;
 	const isModerator = await api.carpools.isModerator(+req.params.id, userId);
-	if(!isModerator) {
+	if (!isModerator) {
 		throw new Error("not a moderator");
 	}
 	await api.carpools.delete_pool(+req.params.id, userId);
+});
+
+const assertCarpoolInit = T.object({
+	eventId: T.number(),
+	name: T.string(),
+});
+carpools.post("/", async (req) => {
+	// @ts-expect-error
+	const userId: number = req.session.userId;
+	const { eventId, name } = assertCarpoolInit(req.body);
+	await api.carpools.create({ userId, eventId, name });
 });
