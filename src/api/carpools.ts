@@ -163,3 +163,13 @@ export async function create({ name, userId, eventId }: CarpoolInit) {
 		},
 	});
 }
+
+export async function delete_pool(carpoolId: number, userId: number) {
+	if(isModerator(carpoolId, userId)) {
+		return await prisma.carpool.delete({
+			where: {
+				id: carpoolId
+			}
+		})
+	}
+}

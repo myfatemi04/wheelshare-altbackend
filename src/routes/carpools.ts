@@ -150,3 +150,13 @@ carpools.get("/:id/invitations_and_requests", async (req) => {
 	);
 	return invitationsAndRequests;
 });
+
+carpools.delete("/:id", async (req) => {
+	// @ts-expect-error
+	const userId: number = req.session.userId;
+	const isModerator = await api.carpools.isModerator(+req.params.id, userId);
+	if(!isModerator) {
+		throw new Error("not a moderator");
+	}
+	await api.carpools.delete_pool(+req.params.id, userId);
+});
