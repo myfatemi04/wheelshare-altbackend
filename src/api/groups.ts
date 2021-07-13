@@ -1,5 +1,6 @@
 import prisma from "./prisma";
 import { createJoinCode } from "../joincode";
+import api from ".";
 
 export async function one(id: number) {
 	return await prisma.group.findFirst({
@@ -83,12 +84,49 @@ export async function deleteOne(id: number) {
 export async function events(id: number) {
 	return await prisma.group.findFirst({
 		select: {
-			events: true,
+			events: {
+				select: {
+					id: true,
+					name: true,
+					groupId: true,
+					group: true,
+					startTime: true,
+					duration: true,
+					endTime: true,
+					daysOfWeek: true,
+					placeId: true,
+					formattedAddress: true,
+					latitude: true,
+					longitude: true,
+					signups: true,
+					carpools: {
+					  select: {
+						id: true,
+						name: true,
+						members: {
+						  select: {
+							id: true,
+							name: true
+						  }
+						}
+					  }
+					}
+				}
+			}
 		},
 		where: {
 			id,
 		},
 	});
+
+//	const toRet = {events: []};
+//	for(let i = 0; i < data.events.length; i++) {
+//		toRet.events[i] = {
+//			event: data.events[i],
+//			alreadyInCarpool: api.events.alreadyInCarpool(id, userId)
+//		};
+//	}
+//	return toRet;
 }
 
 export async function create({ name }: { name: string }) {

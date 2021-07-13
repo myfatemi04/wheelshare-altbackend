@@ -54,6 +54,8 @@ groups.delete("/:id", async (req) => {
 });
 
 groups.get("/:id/events", async (req) => {
+	// @ts-expect-error
+	const userId = req.session.userId;
 	const id = +req.params.id;
 	if (isNaN(id)) {
 		return null;
