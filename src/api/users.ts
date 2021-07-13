@@ -140,6 +140,7 @@ export async function receivedRequests(id: number) {
 					},
 				},
 			},
+			isRequest: true,
 		},
 	});
 
