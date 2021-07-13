@@ -123,3 +123,14 @@ export async function resetCode(id: number) {
 		},
 	});
 }
+
+export async function rename(id: number, newName: string) {
+	return await prisma.group.update({
+		where: {
+			id
+		},
+		data: {
+			name: newName
+		}
+	});
+}
