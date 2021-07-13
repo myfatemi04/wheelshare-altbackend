@@ -1,7 +1,7 @@
 {
 	"name": "wheelshare-altbackend",
 	"version": "1.0.0",
-	"main": "index.js",
+	"main": "src/main.ts",
 	"license": "MIT",
 	"devDependencies": {
 		"@types/cors": "^2.8.10",
@@ -16,7 +16,7 @@
 	},
 	"scripts": {
 		"dev": "ts-node src/main.ts",
-		"build": "tsc && prisma migrate deploy && prisma generate",
+		"build": "tsc && prisma db push && prisma generate",
 		"start": "node dist/main.js"
 	},
 	"dependencies": {
