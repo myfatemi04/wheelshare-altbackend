@@ -37,7 +37,18 @@ carpools.get("/:id", async (req) => {
 					name: true,
 				},
 			},
-			invitations: true,
+			invitations: {
+				select: {
+					user: {
+						select: {
+							id: true,
+							name: true,
+						},
+					},
+					sentTime: true,
+					isRequest: true,
+				},
+			},
 		},
 		where: {
 			id: carpoolId,
@@ -146,9 +157,9 @@ carpools.post("/:id/deny_invite", async (req) => {
 	await api.invitations.delete(userId, carpoolId);
 });
 
+// DELETE /:id/invite {userId}
 carpools.delete("/:id/invite", async (req) => {
-	// @ts-expect-error
-	const userId: number = req.session.userId;
+	const { userId } = assertInviteInit(req.body);
 	const carpoolId = +req.params.id;
 
 	await api.invitations.delete(userId, carpoolId);
