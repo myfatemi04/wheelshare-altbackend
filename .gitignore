@@ -4,3 +4,5 @@ prisma/wheelshare.db
 prisma/wheelshare.db-journal
 dist
 Best_Router.ts
+APIGen.ts
+generatedAPI.ts
