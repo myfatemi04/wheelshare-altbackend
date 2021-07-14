@@ -141,9 +141,15 @@ export type CarpoolInit = {
 	name: string;
 	userId: number;
 	eventId: number;
+	invitedUserIds?: number[];
 };
 
-export async function create({ name, userId, eventId }: CarpoolInit) {
+export async function create({
+	name,
+	userId,
+	eventId,
+	invitedUserIds,
+}: CarpoolInit) {
 	return await prisma.carpool.create({
 		select: {
 			id: true,
@@ -160,19 +166,26 @@ export async function create({ name, userId, eventId }: CarpoolInit) {
 					id: eventId,
 				},
 			},
+			invitations: {
+				create: invitedUserIds?.map((inviteeId) => ({
+					isRequest: false,
+					sentTime: new Date(),
+					userId: inviteeId,
+				})),
+			},
 		},
 	});
 }
 
-export async function delete_pool(carpoolId: number, userId: number) {
-	if (isModerator(carpoolId, userId)) {
-		return await prisma.carpool.delete({
-			where: {
-				id: carpoolId,
-			},
-		});
-	}
+async function delete_(carpoolId: number) {
+	return await prisma.carpool.delete({
+		where: {
+			id: carpoolId,
+		},
+	});
 }
+
+export { delete_ as delete };
 
 export async function leave(carpoolId: number, userId: number) {
 	const { members } = await prisma.carpool.update({

@@ -50,6 +50,15 @@ function assertBoolean(x: any) {
 }
 
 export const T = {
+	array<V>(checker: (...args: any[]) => V) {
+		return (x: any): V[] => {
+			if (Array.isArray(x)) {
+				return x.map(checker);
+			}
+
+			expected("array");
+		};
+	},
 	exact<V>(value: V) {
 		return (x: any): V => {
 			if (x !== value) {
