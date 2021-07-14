@@ -194,6 +194,13 @@ export async function leave(carpoolId: number, userId: number) {
 	});
 	if (members.length === 0) {
 		// Delete the carpool when all members have left
+		// First, all invitations must be removed
+		await prisma.invitation.deleteMany({
+			where: {
+				carpoolId,
+			},
+		});
+		// Then, the carpool can be deleted
 		await prisma.carpool.delete({
 			where: {
 				id: carpoolId,
