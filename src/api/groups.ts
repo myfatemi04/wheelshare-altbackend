@@ -1,19 +1,58 @@
-import prisma from "./prisma";
 import { createJoinCode } from "../joincode";
-import api from ".";
-
-export async function one(id: number) {
-	return await prisma.group.findFirst({
-		where: {
-			id,
-		},
-	});
-}
+import prisma from "./prisma";
 
 export type GroupPreview = {
 	id: number;
 	name: string;
 };
+
+const signupsQuerySelector = {
+	include: {
+		user: {
+			select: {
+				id: true,
+				name: true,
+			},
+		},
+	},
+} as const;
+
+const carpoolsQuerySelector = {
+	select: {
+		id: true,
+		name: true,
+		members: {
+			select: {
+				id: true,
+				name: true,
+			},
+		},
+	},
+} as const;
+
+const eventsQuerySelector = {
+	include: {
+		signups: signupsQuerySelector,
+		carpools: carpoolsQuerySelector,
+	},
+} as const;
+
+export async function one(id: number) {
+	return await prisma.group.findFirst({
+		include: {
+			users: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
+			events: eventsQuerySelector,
+		},
+		where: {
+			id,
+		},
+	});
+}
 
 export async function forCode(code: string): Promise<GroupPreview | null> {
 	return await prisma.group.findFirst({
@@ -84,49 +123,12 @@ export async function deleteOne(id: number) {
 export async function events(id: number) {
 	return await prisma.group.findFirst({
 		select: {
-			events: {
-				select: {
-					id: true,
-					name: true,
-					groupId: true,
-					group: true,
-					startTime: true,
-					duration: true,
-					endTime: true,
-					daysOfWeek: true,
-					placeId: true,
-					formattedAddress: true,
-					latitude: true,
-					longitude: true,
-					signups: true,
-					carpools: {
-					  select: {
-						id: true,
-						name: true,
-						members: {
-						  select: {
-							id: true,
-							name: true
-						  }
-						}
-					  }
-					}
-				}
-			}
+			events: eventsQuerySelector,
 		},
 		where: {
 			id,
 		},
 	});
-
-//	const toRet = {events: []};
-//	for(let i = 0; i < data.events.length; i++) {
-//		toRet.events[i] = {
-//			event: data.events[i],
-//			alreadyInCarpool: api.events.alreadyInCarpool(id, userId)
-//		};
-//	}
-//	return toRet;
 }
 
 export async function create({ name }: { name: string }) {
@@ -165,10 +167,10 @@ export async function resetCode(id: number) {
 export async function rename(id: number, newName: string) {
 	return await prisma.group.update({
 		where: {
-			id
+			id,
 		},
 		data: {
-			name: newName
-		}
+			name: newName,
+		},
 	});
 }
