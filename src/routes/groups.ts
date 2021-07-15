@@ -73,7 +73,9 @@ groups.get("/:id/events", async (req) => {
 groups.post("/:id/generate_code", async (req) => {
 	// add group membership verification
 	const groupId: number = +req.params.id;
-	await api.groups.joinCode(groupId);
+	const code = await api.groups.generateAndApplyJoinCode(groupId);
+
+	return { code };
 });
 
 groups.post("/:id/reset_code", async (req) => {

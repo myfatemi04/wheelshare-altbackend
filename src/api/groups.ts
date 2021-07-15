@@ -121,15 +121,18 @@ export async function create({
 	});
 }
 
-export async function joinCode(id: number) {
-	return await prisma.group.update({
+export async function generateAndApplyJoinCode(id: number) {
+	const code = createJoinCode();
+	await prisma.group.update({
+		select: {},
 		where: {
 			id,
 		},
 		data: {
-			joinCode: createJoinCode(),
+			joinCode: code,
 		},
 	});
+	return code;
 }
 
 export async function resetCode(id: number) {
