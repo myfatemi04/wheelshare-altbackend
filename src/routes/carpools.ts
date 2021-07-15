@@ -1,7 +1,7 @@
 import api from "../api";
 import prisma from "../api/prisma";
 import CustomRouter from "../customrouter";
-import { Unauthorized } from "../errors";
+import { NotFound, Unauthorized } from "../errors";
 import { T } from "../validate";
 
 const carpools = new CustomRouter();
@@ -17,7 +17,7 @@ carpools.get("/:id", async (req) => {
 		throw new Unauthorized();
 	}
 
-	return await prisma.carpool.findFirst({
+	const carpool = await prisma.carpool.findFirst({
 		select: {
 			id: true,
 			name: true,
@@ -55,6 +55,12 @@ carpools.get("/:id", async (req) => {
 			id: carpoolId,
 		},
 	});
+
+	if (!carpool) {
+		throw new NotFound();
+	}
+
+	return carpool;
 });
 
 carpools.delete("/:id/request", async (req) => {

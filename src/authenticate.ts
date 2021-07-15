@@ -26,6 +26,7 @@ export default function authenticate(
 	if (req.session) {
 		next();
 	} else {
-		throw new Unauthenticated();
+		res.status(401);
+		res.json({ status: "error", message: "unauthenticated" });
 	}
 }

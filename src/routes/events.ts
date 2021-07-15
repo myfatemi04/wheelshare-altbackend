@@ -2,7 +2,7 @@ import { AssertionError } from "assert";
 import api from "../api";
 import { EventInit } from "../api/events";
 import CustomRouter from "../customrouter";
-import { Unauthorized } from "../errors";
+import { NotFound, Unauthorized } from "../errors";
 import { T } from "../validate";
 
 const events = new CustomRouter();
@@ -110,5 +110,10 @@ events.get("/:id", async (req) => {
 		throw new Unauthorized();
 	}
 
-	return await api.events.get(eventId);
+	const event = await api.events.get(eventId);
+	if (!event) {
+		throw new NotFound();
+	}
+
+	return event;
 });
