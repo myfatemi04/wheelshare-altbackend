@@ -1,41 +1,11 @@
 import { createJoinCode } from "../joincode";
+import { detailedEventsQuerySelector } from "../selectors";
 import prisma from "./prisma";
 
 export type GroupPreview = {
 	id: number;
 	name: string;
 };
-
-const signupsQuerySelector = {
-	include: {
-		user: {
-			select: {
-				id: true,
-				name: true,
-			},
-		},
-	},
-} as const;
-
-const carpoolsQuerySelector = {
-	select: {
-		id: true,
-		name: true,
-		members: {
-			select: {
-				id: true,
-				name: true,
-			},
-		},
-	},
-} as const;
-
-const eventsQuerySelector = {
-	include: {
-		signups: signupsQuerySelector,
-		carpools: carpoolsQuerySelector,
-	},
-} as const;
 
 export async function one(id: number) {
 	return await prisma.group.findFirst({
@@ -46,7 +16,7 @@ export async function one(id: number) {
 					name: true,
 				},
 			},
-			events: eventsQuerySelector,
+			events: detailedEventsQuerySelector,
 		},
 		where: {
 			id,
@@ -123,7 +93,7 @@ export async function deleteOne(id: number) {
 export async function events(id: number) {
 	return await prisma.group.findFirst({
 		select: {
-			events: eventsQuerySelector,
+			events: detailedEventsQuerySelector,
 		},
 		where: {
 			id,

@@ -1,28 +1,22 @@
 import { AssertionError } from "assert";
-import api from ".";
 import {
 	calculateRecurringEventEndTime,
 	calculateSingleEventEndTime,
 } from "../datetime";
 import { getPlaceDetails } from "../googlemaps";
+import {
+	carpoolsQuerySelector,
+	detailedEventsQuerySelector,
+	signupsQuerySelector,
+} from "../selectors";
 import prisma from "./prisma";
 
 export async function all() {
 	return await prisma.event.findMany({
-		select: {
-			id: true,
-			name: true,
+		include: {
 			group: true,
-			startTime: true,
-			duration: true,
-			endTime: true,
-			daysOfWeek: true,
-			placeId: true,
-			formattedAddress: true,
-			latitude: true,
-			longitude: true,
-			signups: { select: signupsQuerySelector },
-			carpools: { select: carpoolsQuerySelector },
+			signups: signupsQuerySelector,
+			carpools: carpoolsQuerySelector,
 		},
 		orderBy: {
 			endTime: "desc",
@@ -94,33 +88,9 @@ export async function create({
 	});
 }
 
-const signupsQuerySelector = {
-	latitude: true,
-	longitude: true,
-	placeId: true,
-	formattedAddress: true,
-	user: {
-		select: {
-			id: true,
-			name: true,
-		},
-	},
-} as const;
-
-const carpoolsQuerySelector = {
-	id: true,
-	name: true,
-	members: {
-		select: {
-			id: true,
-			name: true,
-		},
-	},
-} as const;
-
 export async function signups(id: number) {
 	const signups = await prisma.eventSignup.findMany({
-		select: signupsQuerySelector,
+		...signupsQuerySelector,
 		where: {
 			eventId: id,
 		},
@@ -131,21 +101,7 @@ export async function signups(id: number) {
 
 export async function get(eventId: number) {
 	const event = await prisma.event.findFirst({
-		select: {
-			id: true,
-			name: true,
-			group: true,
-			startTime: true,
-			duration: true,
-			endTime: true,
-			daysOfWeek: true,
-			placeId: true,
-			formattedAddress: true,
-			latitude: true,
-			longitude: true,
-			signups: { select: signupsQuerySelector },
-			carpools: { select: carpoolsQuerySelector },
-		},
+		...detailedEventsQuerySelector,
 		where: {
 			id: eventId,
 		},
