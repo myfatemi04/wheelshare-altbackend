@@ -9,7 +9,10 @@ export type GroupPreview = {
 
 export async function one(id: number) {
 	return await prisma.group.findFirst({
-		include: {
+		select: {
+			id: true,
+			name: true,
+			joinCode: true,
 			users: {
 				select: {
 					id: true,
@@ -124,7 +127,9 @@ export async function create({
 export async function generateAndApplyJoinCode(id: number) {
 	const code = createJoinCode();
 	await prisma.group.update({
-		select: {},
+		select: {
+			id: true,
+		},
 		where: {
 			id,
 		},
