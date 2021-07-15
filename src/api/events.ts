@@ -118,3 +118,16 @@ export async function get(eventId: number) {
 		signups: signupMap,
 	};
 }
+
+export async function cancel(eventId: number) {
+	// Cancel the event. Sets the 'cancelled' field to true.
+	await prisma.event.update({
+		...detailedEventsQuerySelector,
+		where: {
+			id: eventId,
+		},
+		data: {
+			cancelled: true,
+		},
+	});
+}

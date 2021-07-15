@@ -28,6 +28,15 @@ const assertEventInit: (v: any) => EventInit = T.object({
 });
 events.post("/", (req) => api.events.create(assertEventInit(req.body)));
 
+events.post("/:id/cancel", async (req) => {
+	const id = +req.params.id;
+	if (!isFinite(id)) {
+		throw new AssertionError({ message: "id is not number" });
+	}
+
+	await api.events.cancel(id);
+});
+
 events.get("/:id/signups", async (req) => {
 	const id = +req.params.id;
 	if (!isFinite(id)) {

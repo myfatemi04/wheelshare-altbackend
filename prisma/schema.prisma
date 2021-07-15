@@ -80,6 +80,8 @@ model Event {
 
   signups  EventSignup[]
   carpools Carpool[]
+
+  cancelled Boolean @default(false)
 }
 
 model EventSignup {
