@@ -8,9 +8,14 @@ export default users;
 
 users.get("/@me", async (req) => {
 	// @ts-expect-error
-	const userId: number = req.session.userId;
+	const userId = +req.session.userId;
 	if (!isFinite(userId)) {
-		return null;
+		console.warn(
+			"Invalid user ID, but made it through API auth: ",
+			// @ts-expect-error
+			req.session
+		);
+		throw new Error("???");
 	}
 	const user = await prisma.user.findFirst({ where: { id: userId } });
 	return user;
@@ -18,28 +23,28 @@ users.get("/@me", async (req) => {
 
 users.get("/@me/active_events", async (req) => {
 	// @ts-expect-error
-	const userId: number = req.session.userId;
+	const userId = +req.session.userId;
 	const events = await api.users.activeEvents(userId);
 	return events;
 });
 
 users.get("/@me/active_carpools", async (req) => {
 	// @ts-expect-error
-	const userId: number = req.session.userId;
+	const userId = +req.session.userId;
 	const carpools = await api.users.activeCarpools(userId);
 	return carpools;
 });
 
 users.get("/@me/groups", async (req) => {
 	// @ts-expect-error
-	const userId: number = req.session.userId;
+	const userId = +req.session.userId;
 	const groups = await api.users.groups(userId);
 	return groups;
 });
 
 users.get("/@me/received_requests_and_invites", async (req) => {
 	// @ts-expect-error
-	const userId: number = req.session.userId;
+	const userId = +req.session.userId;
 
 	const requests = await api.users.requestsToUser(userId);
 	const invites = await api.users.invitationsToUser(userId);
@@ -49,7 +54,7 @@ users.get("/@me/received_requests_and_invites", async (req) => {
 
 users.get("/@me/sent_requests_and_invites", async (req) => {
 	// @ts-expect-error
-	const userId: number = req.session.userId;
+	const userId = +req.session.userId;
 
 	const requests = await api.users.requestsFromUser(userId);
 	const invites = await api.users.invitationsFromUser(userId);

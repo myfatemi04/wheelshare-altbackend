@@ -2,6 +2,7 @@ import { AssertionError } from "assert";
 import api from "../api";
 import { EventInit } from "../api/events";
 import CustomRouter from "../customrouter";
+import { Unauthorized } from "../errors";
 import { T } from "../validate";
 
 const events = new CustomRouter();
@@ -26,24 +27,45 @@ const assertEventInit: (v: any) => EventInit = T.object({
 		throw new AssertionError({ message: "expected 0b0XXX_XXXX" });
 	},
 });
-events.post("/", (req) => api.events.create(assertEventInit(req.body)));
-
-events.post("/:id/cancel", async (req) => {
-	const id = +req.params.id;
-	if (!isFinite(id)) {
-		throw new AssertionError({ message: "id is not number" });
+events.post("/", async (req) => {
+	// @ts-expect-error
+	const userId = +req.session.userId;
+	const event = assertEventInit(req.body);
+	const canCreateEvent = await api.users.canCreateEvent(event.groupId, userId);
+	if (!canCreateEvent) {
+		throw new Unauthorized();
 	}
 
-	await api.events.cancel(id);
+	await api.events.create(event);
+});
+
+events.post("/:id/cancel", async (req) => {
+	// @ts-expect-error
+	const userId = +req.session.userId;
+	const eventId = +req.params.id;
+
+	const canModifyEvent = await api.users.canModifyEvent(eventId, userId);
+	if (!canModifyEvent) {
+		throw new Unauthorized();
+	}
+
+	await api.events.cancel(eventId);
 });
 
 events.get("/:id/signups", async (req) => {
-	const id = +req.params.id;
-	if (!isFinite(id)) {
+	// @ts-expect-error
+	const userId = +req.session.userId;
+	const eventId = +req.params.id;
+	if (!isFinite(eventId)) {
 		throw new AssertionError({ message: "id is not number" });
 	}
 
-	return await api.events.signups(id);
+	const canViewEvent = await api.users.canViewEvent(eventId, userId);
+	if (!canViewEvent) {
+		throw new Unauthorized();
+	}
+
+	return await api.events.signups(eventId);
 });
 
 const assertEventSignupInit = T.object({
@@ -52,14 +74,19 @@ const assertEventSignupInit = T.object({
 events.post("/:id/signup", async (req) => {
 	// @ts-expect-error
 	const userId = req.session.userId;
-	const id = +req.params.id;
-	if (!isFinite(id)) {
+	const eventId = +req.params.id;
+	if (!isFinite(eventId)) {
 		throw new AssertionError({ message: "id is not number" });
+	}
+
+	const can = await api.users.canModifyEvent(eventId, userId);
+	if (!can) {
+		throw new Unauthorized();
 	}
 
 	const { placeId } = assertEventSignupInit(req.body);
 	await api.signups.update({
-		eventId: id,
+		eventId,
 		userId,
 		placeId,
 	});
@@ -68,14 +95,20 @@ events.post("/:id/signup", async (req) => {
 events.delete("/:id/signup", async (req) => {
 	// @ts-expect-error
 	const userId = req.session.userId;
-	const id = +req.params.id;
+	const eventId = +req.params.id;
 
-	await api.signups.delete(id, userId);
+	await api.signups.delete(eventId, userId);
 });
 
 events.get("/:id", async (req) => {
 	// @ts-expect-error
 	const userId = req.session.userId;
 	const eventId = +req.params.id;
+
+	const canViewEvent = await api.users.canViewEvent(eventId, userId);
+	if (!canViewEvent) {
+		throw new Unauthorized();
+	}
+
 	return await api.events.get(eventId);
 });

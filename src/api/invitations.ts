@@ -1,3 +1,4 @@
+import { InvalidStateTransition } from "../errors";
 import prisma from "./prisma";
 
 export async function create({
@@ -58,7 +59,7 @@ export async function execute({
 		where: { userId, carpoolId },
 	});
 	if (!existing) {
-		throw new Error("Cannot execute invite/request that does not exist");
+		throw new InvalidStateTransition();
 	}
 	await prisma.invitation.delete({
 		where: {

@@ -1,5 +1,7 @@
 import api from "../api";
+import { canViewGroup } from "../api/users";
 import CustomRouter from "../customrouter";
+import { Forbidden, NotFound, Unauthorized } from "../errors";
 import { T } from "../validate";
 
 const groups = new CustomRouter();
@@ -14,7 +16,11 @@ groups.post("/", async (req) => {
 	const { name } = assertGroupInit(req.body);
 	// @ts-expect-error
 	const userId = +req.session.userId;
-	const { id } = await api.groups.create({ name, initialMemberIds: [userId] });
+
+	const { id } = await api.groups.create({
+		name,
+		initialMemberIds: [userId],
+	});
 	return { id };
 });
 
@@ -28,59 +34,100 @@ groups.post("/:id/join", async (req) => {
 	const userId: number = req.session.userId;
 	const correctCode = await api.groups.getCode(groupId);
 	if (correctCode == null) {
-		throw new Error("this group cannot be joined via a join code");
+		throw new Forbidden();
 	}
 	if (correctCode !== code) {
-		throw new Error("incorrect code");
+		throw new Unauthorized();
 	}
 	await api.groups.addUser(groupId, userId);
 });
 
 groups.get("/:id", async (req) => {
-	const id = +req.params.id;
-	if (isNaN(id)) {
-		return null;
+	const groupId = +req.params.id;
+	if (isNaN(groupId)) {
+		throw new NotFound();
+	}
+
+	// @ts-expect-error
+	const userId = +req.session.userId;
+
+	const can = await canViewGroup(userId, groupId);
+	if (!can) {
+		throw new NotFound();
 	}
 
 	try {
-		return await api.groups.one(id);
+		const result = await api.groups.one(groupId);
+		if (!result) {
+			console.warn(
+				"The user could view the group, but the group was not found:",
+				groupId
+			);
+			throw new NotFound();
+		}
+		return result;
 	} catch (e) {
-		console.error(e);
-		return null;
+		throw new NotFound();
 	}
 });
 
 groups.delete("/:id", async (req) => {
-	const id = +req.params.id;
-	if (isNaN(id)) {
-		return null;
+	const groupId = +req.params.id;
+	if (isNaN(groupId)) {
+		throw new NotFound();
 	}
 
-	await api.groups.deleteOne(id);
+	// @ts-expect-error
+	const userId = +req.session.userId;
+
+	const can = await api.users.canDeleteGroup(groupId, userId);
+	if (!can) {
+		throw new Unauthorized();
+	}
+
+	await api.groups.deleteOne(groupId);
 });
 
 groups.get("/:id/events", async (req) => {
 	// @ts-expect-error
 	const userId = req.session.userId;
-	const id = +req.params.id;
-	if (isNaN(id)) {
-		return null;
+	const groupId = +req.params.id;
+	if (isNaN(groupId)) {
+		throw new NotFound();
 	}
 
-	return (await api.groups.events(id))?.events ?? null;
+	const can = await canViewGroup(userId, groupId);
+	if (!can) {
+		throw new NotFound();
+	}
+
+	return await api.groups.events(groupId);
 });
 
 groups.post("/:id/generate_code", async (req) => {
-	// add group membership verification
+	// @ts-expect-error
+	const userId = +req.session.userId;
 	const groupId: number = +req.params.id;
-	const code = await api.groups.generateAndApplyJoinCode(groupId);
 
+	const can = await api.users.canGenerateJoinCode(groupId, userId);
+	if (!can) {
+		throw new Unauthorized();
+	}
+
+	const code: string = await api.groups.generateAndApplyJoinCode(groupId);
 	return { code };
 });
 
 groups.post("/:id/reset_code", async (req) => {
-	// add group membership verification
+	// @ts-expect-error
+	const userId = +req.session.userId;
 	const groupId: number = +req.params.id;
+
+	const can = await api.users.canResetJoinCode(groupId, userId);
+	if (!can) {
+		throw new Unauthorized();
+	}
+
 	await api.groups.resetCode(groupId);
 });
 

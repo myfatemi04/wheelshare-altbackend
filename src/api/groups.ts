@@ -94,7 +94,7 @@ export async function deleteOne(id: number) {
 }
 
 export async function events(id: number) {
-	return await prisma.group.findFirst({
+	const group = await prisma.group.findFirst({
 		select: {
 			events: detailedEventsQuerySelector,
 		},
@@ -102,6 +102,12 @@ export async function events(id: number) {
 			id,
 		},
 	});
+
+	if (!group) {
+		return null;
+	} else {
+		return group.events;
+	}
 }
 
 export async function create({

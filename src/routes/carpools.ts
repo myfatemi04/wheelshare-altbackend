@@ -1,6 +1,7 @@
 import api from "../api";
 import prisma from "../api/prisma";
 import CustomRouter from "../customrouter";
+import { Unauthorized } from "../errors";
 import { T } from "../validate";
 
 const carpools = new CustomRouter();
@@ -11,9 +12,9 @@ carpools.get("/:id", async (req) => {
 	const carpoolId = +req.params.id;
 	// @ts-expect-error
 	const requesterId: number = req.session.userId;
-	const visible = api.carpools.visibleToUser(carpoolId, requesterId);
-	if (!visible) {
-		throw new Error("no access to carpool");
+	const can = await api.users.canViewCarpool(carpoolId, requesterId);
+	if (!can) {
+		throw new Unauthorized();
 	}
 
 	return await prisma.carpool.findFirst({
@@ -60,6 +61,12 @@ carpools.delete("/:id/request", async (req) => {
 	const carpoolId = +req.params.id;
 	// @ts-expect-error
 	const userId: number = req.session.userId;
+
+	const can = await api.users.canManageCarpoolRequests(carpoolId, userId);
+	if (!can) {
+		throw new Unauthorized();
+	}
+
 	await api.invitations.delete(userId, carpoolId);
 });
 
@@ -67,9 +74,9 @@ carpools.post("/:id/request", async (req) => {
 	const carpoolId = +req.params.id;
 	// @ts-expect-error
 	const requesterId: number = req.session.userId;
-	const visible = api.carpools.visibleToUser(carpoolId, requesterId);
-	if (!visible) {
-		throw new Error("no access to carpool");
+	const can = await api.users.canViewCarpool(carpoolId, requesterId);
+	if (!can) {
+		throw new Unauthorized();
 	}
 
 	await api.invitations.create({
@@ -88,9 +95,10 @@ carpools.post("/:id/accept_request", async (req) => {
 	// @ts-expect-error
 	const accepterId: number = req.session.userId;
 	const carpoolId = +req.params.id;
-	const isMember = await api.carpools.isModerator(carpoolId, accepterId);
-	if (!isMember) {
-		throw new Error("not a moderator");
+
+	const can = await api.users.canManageCarpoolRequests(carpoolId, accepterId);
+	if (!can) {
+		throw new Unauthorized();
 	}
 
 	// Execute the invitation for the requesterId in the given carpool
@@ -110,9 +118,9 @@ carpools.post("/:id/deny_request", async (req) => {
 
 	const { userId: requesterId } = assertDenyRequestInit(req.body);
 
-	const isModerator = await api.carpools.isModerator(carpoolId, denierId);
-	if (!isModerator) {
-		throw new Error("not a moderator");
+	const can = await api.users.canManageCarpoolRequests(carpoolId, denierId);
+	if (!can) {
+		throw new Unauthorized();
 	}
 
 	await api.invitations.delete(requesterId, carpoolId);
@@ -125,9 +133,9 @@ carpools.post("/:id/invite", async (req) => {
 	const carpoolId = +req.params.id;
 	// @ts-expect-error
 	const inviterId: number = req.session.userId;
-	const isMember = await api.carpools.isModerator(+req.params.id, inviterId);
-	if (!isMember) {
-		throw new Error("not a moderator");
+	const can = await api.users.canManageCarpoolInvites(carpoolId, inviterId);
+	if (!can) {
+		throw new Unauthorized();
 	}
 
 	const { userId } = assertInviteInit(req.body);
@@ -143,6 +151,8 @@ carpools.post("/:id/accept_invite", async (req) => {
 	const userId: number = req.session.userId;
 	const carpoolId = +req.params.id;
 
+	// No permissions needed to accept an invitation
+
 	await api.invitations.execute({
 		userId,
 		carpoolId,
@@ -154,6 +164,8 @@ carpools.post("/:id/deny_invite", async (req) => {
 	const userId: number = req.session.userId;
 	const carpoolId = +req.params.id;
 
+	// No permissions needed to deny an invitation
+
 	await api.invitations.delete(userId, carpoolId);
 });
 
@@ -162,15 +174,27 @@ carpools.delete("/:id/invite", async (req) => {
 	const { userId } = assertInviteInit(req.body);
 	const carpoolId = +req.params.id;
 
+	// @ts-expect-error
+	const managerId = +req.session.userId;
+
+	const can = await api.users.canManageCarpoolInvites(carpoolId, managerId);
+	if (!can) {
+		throw new Unauthorized();
+	}
+
 	await api.invitations.delete(userId, carpoolId);
 });
 
 carpools.get("/:id/invitations_and_requests", async (req) => {
 	// @ts-expect-error
 	const userId: number = req.session.userId;
-	const isMember = await api.carpools.isModerator(+req.params.id, userId);
-	if (!isMember) {
-		throw new Error("not a moderator");
+	const carpoolId = +req.params.id;
+	const can = await api.users.canViewCarpoolInvitesAndRequests(
+		carpoolId,
+		userId
+	);
+	if (!can) {
+		throw new Unauthorized();
 	}
 	const invitationsAndRequests = await api.carpools.invitationsAndRequests(
 		+req.params.id
@@ -181,9 +205,10 @@ carpools.get("/:id/invitations_and_requests", async (req) => {
 carpools.delete("/:id", async (req) => {
 	// @ts-expect-error
 	const userId: number = req.session.userId;
-	const isModerator = await api.carpools.isModerator(+req.params.id, userId);
-	if (!isModerator) {
-		throw new Error("not a moderator");
+	const carpoolId = +req.params.id;
+	const can = await api.users.canDeleteCarpool(carpoolId, userId);
+	if (!can) {
+		throw new Unauthorized();
 	}
 	await api.carpools.delete(+req.params.id);
 });
@@ -197,12 +222,19 @@ carpools.post("/", async (req) => {
 	// @ts-expect-error
 	const userId: number = req.session.userId;
 	const { eventId, name, invitedUserIds } = assertCarpoolInit(req.body);
+
+	const can = await api.users.canAddCarpoolToEvent(eventId, userId);
+	if (!can) {
+		throw new Unauthorized();
+	}
+
 	const { id } = await api.carpools.create({
 		userId,
 		eventId,
 		name,
 		invitedUserIds,
 	});
+
 	return { id };
 });
 
@@ -212,6 +244,8 @@ carpools.post("/:id/leave", async (req) => {
 	const userId: number = req.session.userId;
 	const carpoolId = +req.params.id;
 
+	// No permissions required to leave a carpool
+
 	await api.carpools.leave(carpoolId, userId);
 });
 
@@ -219,6 +253,11 @@ carpools.get("/:id/potential_invitees", async (req) => {
 	// @ts-expect-error
 	const userId: number = req.session.userId;
 	const carpoolId = +req.params.id;
+
+	const can = await api.users.canManageCarpoolInvites(carpoolId, userId);
+	if (!can) {
+		throw new Unauthorized();
+	}
 
 	return await api.carpools.potentialInvitees(carpoolId);
 });

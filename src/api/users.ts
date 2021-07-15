@@ -214,3 +214,156 @@ export async function invitationsFromUser(id: number) {
 
 	return invitations;
 }
+
+export async function canModifyEvent(
+	eventId: number,
+	userId: number
+): Promise<boolean> {
+	return await canViewEvent(eventId, userId);
+}
+
+export async function canAddCarpoolToEvent(
+	eventId: number,
+	userId: number
+): Promise<boolean> {
+	return await canViewEvent(eventId, userId);
+}
+
+export async function canViewEvent(
+	eventId: number,
+	userId: number
+): Promise<boolean> {
+	// Find a group that the user is a member of which has the same event.
+	const group = await prisma.group.findFirst({
+		select: { id: true },
+		where: {
+			events: {
+				some: {
+					id: eventId,
+				},
+			},
+			users: {
+				some: {
+					id: userId,
+				},
+			},
+		},
+	});
+
+	return group !== null;
+}
+
+export async function isGroupMember(
+	groupId: number,
+	userId: number
+): Promise<boolean> {
+	const group = await prisma.group.findFirst({
+		select: {
+			id: true,
+		},
+		where: {
+			id: groupId,
+			users: {
+				some: {
+					id: userId,
+				},
+			},
+		},
+	});
+
+	return group !== null;
+}
+
+// True if the user is a member of the group
+export async function canCreateEvent(
+	groupId: number,
+	userId: number
+): Promise<boolean> {
+	return await isGroupMember(groupId, userId);
+}
+
+export async function canModifyGroup(groupId: number, userId: number) {
+	return await isGroupMember(groupId, userId);
+}
+
+export async function canGenerateJoinCode(groupId: number, userId: number) {
+	return await canModifyGroup(groupId, userId);
+}
+
+export async function canResetJoinCode(groupId: number, userId: number) {
+	return await canModifyGroup(groupId, userId);
+}
+
+export async function canViewGroup(groupId: number, userId: number) {
+	return await isGroupMember(groupId, userId);
+}
+
+export async function canDeleteGroup(groupId: number, userId: number) {
+	return await isGroupMember(groupId, userId);
+}
+
+/**
+ * Returns true if the carpool is in a group that the user is in.
+ */
+export async function canViewCarpool(carpoolId: number, userId: number) {
+	const count = await prisma.group.count({
+		where: {
+			// Where this carpool's event exists
+			events: {
+				some: {
+					carpools: {
+						some: {
+							id: carpoolId,
+						},
+					},
+				},
+			},
+			users: {
+				some: {
+					id: userId,
+				},
+			},
+		},
+	});
+
+	return count > 0;
+}
+
+export async function isCarpoolMember(carpoolId: number, userId: number) {
+	const count = await prisma.carpool.count({
+		where: {
+			id: carpoolId,
+			members: {
+				some: {
+					id: userId,
+				},
+			},
+		},
+	});
+	return count > 0;
+}
+
+export async function canManageCarpoolRequests(
+	carpoolId: number,
+	userId: number
+) {
+	return await isCarpoolMember(carpoolId, userId);
+}
+
+export async function canManageCarpoolInvites(
+	carpoolId: number,
+	userId: number
+) {
+	return await isCarpoolMember(carpoolId, userId);
+}
+
+export async function canViewCarpoolInvitesAndRequests(
+	carpoolId: number,
+	userId: number
+) {
+	return await isCarpoolMember(carpoolId, userId);
+}
+
+export async function canDeleteCarpool(carpoolId: number, userId: number) {
+	return await isCarpoolMember(carpoolId, userId);
+}
