@@ -101,13 +101,22 @@ export async function events(id: number) {
 	});
 }
 
-export async function create({ name }: { name: string }) {
+export async function create({
+	name,
+	initialMemberIds,
+}: {
+	name: string;
+	initialMemberIds: number[];
+}) {
 	return await prisma.group.create({
 		select: {
 			id: true,
 		},
 		data: {
 			name,
+			users: {
+				connect: initialMemberIds.map((id) => ({ id })),
+			},
 		},
 	});
 }

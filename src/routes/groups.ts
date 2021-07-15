@@ -10,7 +10,13 @@ const assertGroupInit = T.object({
 	name: T.string(),
 });
 
-groups.post("/", (req) => api.groups.create(assertGroupInit(req.body)));
+groups.post("/", async (req) => {
+	const { name } = assertGroupInit(req.body);
+	// @ts-expect-error
+	const userId = +req.session.userId;
+	const { id } = await api.groups.create({ name, initialMemberIds: [userId] });
+	return { id };
+});
 
 const assertGroupJoinInit = T.object({
 	code: T.string(),
