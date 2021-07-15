@@ -16,7 +16,7 @@
 	},
 	"scripts": {
 		"dev": "ts-node src/main.ts",
-		"build": "tsc && prisma db push && prisma generate",
+		"build": "prisma db push && tsc",
 		"start": "node dist/main.js"
 	},
 	"dependencies": {
