@@ -1,4 +1,5 @@
 import { Invitation } from "@prisma/client";
+import { NotFound } from "../errors";
 import prisma from "./prisma";
 
 /**
@@ -220,4 +221,59 @@ export async function leave(carpoolId: number, userId: number) {
 			},
 		});
 	}
+}
+
+export async function potentialInvitees(carpoolId: number) {
+	const carpool = await prisma.carpool.findFirst({
+		where: { id: carpoolId },
+		select: { eventId: true },
+	});
+
+	if (!carpool) {
+		throw new NotFound();
+	}
+
+	const { eventId } = carpool;
+
+	const signups = await prisma.eventSignup.findMany({
+		select: {
+			user: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
+			latitude: true,
+			longitude: true,
+		},
+		where: { eventId },
+	});
+
+	// All members in any carpool for this event
+	const carpools = await prisma.carpool.findMany({
+		select: {
+			members: {
+				select: {
+					id: true,
+				},
+			},
+		},
+		where: {
+			eventId,
+		},
+	});
+
+	const unavailableMemberIds = carpools.reduce((prev, curr) => {
+		curr.members.forEach((member) => prev.add(member.id));
+		return prev;
+	}, new Set<number>());
+
+	const availableMembers = signups.reduce((prev, curr) => {
+		if (!unavailableMemberIds.has(curr.user.id)) {
+			prev.push(curr);
+		}
+		return prev;
+	}, [] as Array<typeof signups[0]>);
+
+	return availableMembers;
 }

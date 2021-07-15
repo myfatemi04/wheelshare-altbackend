@@ -1,6 +1,7 @@
 import { AssertionError } from "assert";
 import { Request, RequestHandler, Router } from "express";
 import { RouteParameters } from "express-serve-static-core";
+import { NotFound, Unauthenticated, Unauthorized } from "./errors";
 
 export default class CustomRouter {
 	public readonly expressRouter = Router();
@@ -22,6 +23,15 @@ export default class CustomRouter {
 				if (e instanceof AssertionError) {
 					res.status(400);
 					res.json({ status: "error", message: e.message });
+				} else if (e instanceof NotFound) {
+					res.status(404);
+					res.json({ status: "error", message: "not found" });
+				} else if (e instanceof Unauthenticated) {
+					res.status(401);
+					res.json({ status: "error", message: "unauthenticated" });
+				} else if (e instanceof Unauthorized) {
+					res.status(403);
+					res.json({ status: "error", message: "unauthorized" });
 				} else {
 					console.error("Unexpected server error");
 					console.error(e);

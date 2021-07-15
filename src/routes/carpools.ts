@@ -214,3 +214,11 @@ carpools.post("/:id/leave", async (req) => {
 
 	await api.carpools.leave(carpoolId, userId);
 });
+
+carpools.get("/:id/potential_invitees", async (req) => {
+	// @ts-expect-error
+	const userId: number = req.session.userId;
+	const carpoolId = +req.params.id;
+
+	return await api.carpools.potentialInvitees(carpoolId);
+});
