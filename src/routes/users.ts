@@ -16,8 +16,26 @@ users.get("/@me", async (req) => {
 	return user;
 });
 
-// @ts-expect-error
-users.get("/@me/groups", (req) => api.users.groups(req.session.userId));
+users.get("/@me/active_events", async (req) => {
+	// @ts-expect-error
+	const userId: number = req.session.userId;
+	const events = await api.users.activeEvents(userId);
+	return events;
+});
+
+users.get("/@me/active_carpools", async (req) => {
+	// @ts-expect-error
+	const userId: number = req.session.userId;
+	const carpools = await api.users.activeCarpools(userId);
+	return carpools;
+});
+
+users.get("/@me/groups", (req) =>
+	api.users.groups(
+		// @ts-expect-error
+		req.session.userId
+	)
+);
 
 users.get("/@me/received_requests_and_invites", async (req) => {
 	// @ts-expect-error

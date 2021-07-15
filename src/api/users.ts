@@ -1,4 +1,47 @@
+import { detailedEventsQuerySelector } from "../selectors";
 import prisma from "./prisma";
+
+// Context: From the homepage
+export function activeCarpools(userId: number) {
+	const now = new Date();
+	return prisma.carpool.findMany({
+		select: {
+			id: true,
+			members: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
+			event: {
+				select: {
+					id: true,
+					name: true,
+					startTime: true,
+					duration: true,
+					endTime: true,
+					formattedAddress: true,
+					group: {
+						select: {
+							id: true,
+							name: true,
+						},
+					},
+				},
+			},
+		},
+		where: {
+			members: {
+				some: {
+					id: userId,
+				},
+			},
+			event: {
+				endTime: { gte: now },
+			},
+		},
+	});
+}
 
 export function groups(userId: number) {
 	return prisma.group.findMany({
@@ -14,33 +57,19 @@ export function groups(userId: number) {
 
 export function activeEvents(userId: number) {
 	return prisma.event.findMany({
+		...detailedEventsQuerySelector,
 		// where some of the group's users have the id `userId`
 		where: {
-			AND: [
-				{
-					group: {
-						users: {
-							some: {
-								id: userId,
-							},
-						},
+			group: {
+				users: {
+					some: {
+						id: userId,
 					},
 				},
-				{
-					OR: [
-						{
-							endTime: {
-								equals: null,
-							},
-						},
-						{
-							endTime: {
-								lt: new Date(),
-							},
-						},
-					],
-				},
-			],
+			},
+			endTime: {
+				lt: new Date(),
+			},
 		},
 	});
 }
