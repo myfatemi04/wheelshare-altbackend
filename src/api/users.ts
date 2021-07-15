@@ -7,6 +7,7 @@ export function activeCarpools(userId: number) {
 	return prisma.carpool.findMany({
 		select: {
 			id: true,
+			name: true,
 			members: {
 				select: {
 					id: true,
@@ -45,6 +46,10 @@ export function activeCarpools(userId: number) {
 
 export function groups(userId: number) {
 	return prisma.group.findMany({
+		select: {
+			id: true,
+			name: true,
+		},
 		where: {
 			users: {
 				some: {
@@ -56,6 +61,7 @@ export function groups(userId: number) {
 }
 
 export function activeEvents(userId: number) {
+	const now = new Date();
 	return prisma.event.findMany({
 		...detailedEventsQuerySelector,
 		// where some of the group's users have the id `userId`
@@ -67,9 +73,7 @@ export function activeEvents(userId: number) {
 					},
 				},
 			},
-			endTime: {
-				lt: new Date(),
-			},
+			endTime: { gte: now },
 		},
 	});
 }

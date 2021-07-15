@@ -30,12 +30,12 @@ users.get("/@me/active_carpools", async (req) => {
 	return carpools;
 });
 
-users.get("/@me/groups", (req) =>
-	api.users.groups(
-		// @ts-expect-error
-		req.session.userId
-	)
-);
+users.get("/@me/groups", async (req) => {
+	// @ts-expect-error
+	const userId: number = req.session.userId;
+	const groups = await api.users.groups(userId);
+	return groups;
+});
 
 users.get("/@me/received_requests_and_invites", async (req) => {
 	// @ts-expect-error
