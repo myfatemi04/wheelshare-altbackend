@@ -88,6 +88,29 @@ export async function create({
 	});
 }
 
+export async function signupsBulk(id: number, userIds: number[]) {
+	return await prisma.eventSignup.findMany({
+		select: {
+			user: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
+			latitude: true,
+			longitude: true,
+			formattedAddress: true,
+			placeId: true,
+		},
+		where: {
+			eventId: id,
+			userId: {
+				in: userIds,
+			},
+		},
+	});
+}
+
 export async function signups(id: number) {
 	const signups = await prisma.eventSignup.findMany({
 		...signupsQuerySelector,

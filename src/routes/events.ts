@@ -117,3 +117,30 @@ events.get("/:id", async (req) => {
 
 	return event;
 });
+
+events.get("/:id/signups_bulk", async (req) => {
+	// @ts-expect-error
+	const userId = req.session.userId;
+	const eventId = +req.params.id;
+
+	const can = await api.users.canViewEvent(eventId, userId);
+	if (!can) {
+		throw new Unauthorized();
+	}
+
+	const userIdsQs = req.query.userIds;
+	if (typeof userIdsQs !== "string") {
+		throw new AssertionError({ message: "expected string" });
+	}
+
+	const userIds = [];
+	for (let id of userIdsQs.split(",")) {
+		if (isFinite(+id)) {
+			userIds.push(+id);
+		} else {
+			throw new AssertionError({ message: "expected numeric userid" });
+		}
+	}
+
+	return await api.events.signupsBulk(eventId, userIds);
+});
