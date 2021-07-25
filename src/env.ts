@@ -4,6 +4,7 @@ const requiredEnvironmentVariables = [
 	"GOOGLE_API_KEY",
 	"ION_CLIENT_ID",
 	"ION_CLIENT_SECRET",
+	"SENDGRID_API_KEY",
 ];
 
 for (let env of requiredEnvironmentVariables) {
@@ -12,3 +13,7 @@ for (let env of requiredEnvironmentVariables) {
 		process.exit(1);
 	}
 }
+
+import mail from "@sendgrid/mail";
+
+mail.setApiKey(process.env.SENDGRID_API_KEY);
