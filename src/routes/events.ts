@@ -70,6 +70,7 @@ events.get("/:id/signups", async (req) => {
 
 const assertEventSignupInit = T.object({
 	placeId: T.nullable(T.string()),
+	canDrive: T.boolean(),
 });
 events.post("/:id/signup", async (req) => {
 	// @ts-expect-error
@@ -84,11 +85,12 @@ events.post("/:id/signup", async (req) => {
 		throw new Unauthorized();
 	}
 
-	const { placeId } = assertEventSignupInit(req.body);
+	const { placeId, canDrive } = assertEventSignupInit(req.body);
 	await api.signups.update({
 		eventId,
 		userId,
 		placeId,
+		canDrive,
 	});
 });
 

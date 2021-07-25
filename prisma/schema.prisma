@@ -90,6 +90,8 @@ model EventSignup {
   userId  Int
   user    User  @relation(fields: userId, references: [id])
 
+  canDrive Boolean @default(false)
+
   placeId          String?
   formattedAddress String?
   latitude         Float?
