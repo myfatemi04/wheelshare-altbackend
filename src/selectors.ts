@@ -4,6 +4,7 @@ export const signupsQuerySelector = {
 		longitude: true,
 		placeId: true,
 		formattedAddress: true,
+		canDrive: true,
 		user: {
 			select: {
 				id: true,

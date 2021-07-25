@@ -17,45 +17,7 @@ carpools.get("/:id", async (req) => {
 		throw new Unauthorized();
 	}
 
-	const carpool = await prisma.carpool.findFirst({
-		select: {
-			id: true,
-			name: true,
-			eventId: true,
-			event: {
-				select: {
-					id: true,
-					name: true,
-					formattedAddress: true,
-					latitude: true,
-					longitude: true,
-					placeId: true,
-				},
-			},
-			members: {
-				select: {
-					id: true,
-					name: true,
-				},
-			},
-			invitations: {
-				select: {
-					user: {
-						select: {
-							id: true,
-							name: true,
-						},
-					},
-					sentTime: true,
-					isRequest: true,
-				},
-			},
-		},
-		where: {
-			id: carpoolId,
-		},
-	});
-
+	const carpool = await api.carpools.get(carpoolId);
 	if (!carpool) {
 		throw new NotFound();
 	}

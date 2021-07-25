@@ -31,13 +31,43 @@ export async function active(id: number) {
 }
 
 export async function get(id: number) {
-	const carpool = await prisma.carpool.findFirst({
+	return await prisma.carpool.findFirst({
+		select: {
+			id: true,
+			name: true,
+			event: {
+				select: {
+					id: true,
+					name: true,
+					formattedAddress: true,
+					latitude: true,
+					longitude: true,
+					placeId: true,
+				},
+			},
+			members: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
+			invitations: {
+				select: {
+					user: {
+						select: {
+							id: true,
+							name: true,
+						},
+					},
+					sentTime: true,
+					isRequest: true,
+				},
+			},
+		},
 		where: {
 			id,
 		},
 	});
-
-	return carpool;
 }
 
 export type CarpoolInit = {
