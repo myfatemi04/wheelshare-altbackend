@@ -1,3 +1,4 @@
+import { sendInvitedToCarpoolEmail, sendRequestAcceptedEmail } from "../email";
 import { InvalidStateTransition } from "../errors";
 import prisma from "./prisma";
 
@@ -17,13 +18,11 @@ export async function create({
 		},
 	});
 	if (existing) {
-		if (existing.isRequest) {
-			// Do nothing
-		} else {
-			// They were already invited, and then they requested to join
+		if (existing.isRequest !== isRequest) {
 			execute({ userId, carpoolId });
 		}
 	} else {
+		sendInvitedToCarpoolEmail(userId, carpoolId);
 		return await prisma.invitation.create({
 			data: {
 				userId,
@@ -60,6 +59,9 @@ export async function execute({
 	});
 	if (!existing) {
 		throw new InvalidStateTransition();
+	}
+	if (existing.isRequest) {
+		sendRequestAcceptedEmail(userId, carpoolId);
 	}
 	await prisma.invitation.delete({
 		where: {

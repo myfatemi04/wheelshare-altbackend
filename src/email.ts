@@ -54,3 +54,20 @@ export async function sendRequestedToJoinCarpoolEmail(
 
 	await sendEmail(receiver.email, subject, html);
 }
+
+// Sends an email to a user that notifies them that their request to join a carpool has been accepted.
+export async function sendRequestAcceptedEmail(
+	requesterId: number,
+	carpoolId: number
+) {
+	const requester = await prisma.user.findFirst({ where: { id: requesterId } });
+	const carpool = await prisma.carpool.findFirst({ where: { id: carpoolId } });
+
+	const subject = `Your request to join ${carpool.name} has been accepted!`;
+	const html = `<p>Hello ${requester.name}, </p>
+		<p>Your request to join ${carpool.name} has been accepted.</p>
+		<p>You can view the carpool <a href="https://wheelshare.app/carpool/${carpoolId}">here</a>.</p>
+		`;
+
+	await sendEmail(requester.email, subject, html);
+}
