@@ -233,6 +233,10 @@ export async function canViewEvent(
 	eventId: number,
 	userId: number
 ): Promise<boolean> {
+	return true;
+
+	/*
+
 	// Find a group that the user is a member of which has the same event.
 	const group = await prisma.group.findFirst({
 		select: { id: true },
@@ -251,6 +255,8 @@ export async function canViewEvent(
 	});
 
 	return group !== null;
+
+	*/
 }
 
 export async function isGroupMember(
