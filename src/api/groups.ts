@@ -120,7 +120,7 @@ export async function removeAdmin(groupId: number, userId: number) {
 		},
 		data: {
 			admins: {
-				delete: {
+				disconnect: {
 					id: userId,
 				},
 			},
