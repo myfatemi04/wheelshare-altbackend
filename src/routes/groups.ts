@@ -131,4 +131,30 @@ groups.post("/:id/reset_code", async (req) => {
 	await api.groups.resetCode(groupId);
 });
 
+groups.post("/:id/add_admin", async (req) => {
+	// @ts-expect-error
+	const userId = +req.session.userId;
+	const groupId: number = +req.params.id;
+	const can = await api.users.canAddAdmins(groupId, userId);
+	if (!can) {
+		throw new Unauthorized();
+	}
+
+	const userIdToAdd: number = +req.body.userId;
+	await api.groups.addAdmin(groupId, userIdToAdd);
+});
+
+groups.post("/:id/remove_admin", async (req) => {
+	// @ts-expect-error
+	const userId = +req.session.userId;
+	const groupId: number = +req.params.id;
+	const can = await api.users.canRemoveAdmins(groupId, userId);
+	if (!can) {
+		throw new Unauthorized();
+	}
+
+	const userIdToRemove: number = +req.body.userId;
+	await api.groups.removeAdmin(groupId, userIdToRemove);
+});
+
 export default groups;
