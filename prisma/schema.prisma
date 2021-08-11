@@ -16,7 +16,8 @@ model User {
   // Invitations to carpools and active requests.
   invitations Invitation[]
 
-  carpools Carpool[]
+  carpools      Carpool[]
+  groupsAsAdmin Group[]   @relation("admins", references: [id])
 }
 
 model Invitation {
@@ -53,6 +54,7 @@ model Group {
   id       Int     @id @default(autoincrement())
   name     String
   users    User[]  @relation(references: [id])
+  admins   User[]  @relation("admins", references: [id])
   events   Event[]
   joinCode String?
 }

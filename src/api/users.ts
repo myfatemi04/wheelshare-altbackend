@@ -280,6 +280,27 @@ export async function isGroupMember(
 	return group !== null;
 }
 
+export async function isGroupAdmin(
+	groupId: number,
+	userId: number
+): Promise<boolean> {
+	const group = await prisma.group.findFirst({
+		select: {
+			id: true,
+		},
+		where: {
+			id: groupId,
+			admins: {
+				some: {
+					id: userId,
+				},
+			},
+		},
+	});
+
+	return group !== null;
+}
+
 // True if the user is a member of the group
 export async function canCreateEvent(
 	groupId: number,
@@ -288,16 +309,16 @@ export async function canCreateEvent(
 	return await isGroupMember(groupId, userId);
 }
 
-export async function canModifyGroup(groupId: number, userId: number) {
-	return await isGroupMember(groupId, userId);
+export async function canModerateGroupMembers(groupId: number, userId: number) {
+	return await isGroupAdmin(groupId, userId);
 }
 
 export async function canGenerateJoinCode(groupId: number, userId: number) {
-	return await canModifyGroup(groupId, userId);
+	return await canModerateGroupMembers(groupId, userId);
 }
 
 export async function canResetJoinCode(groupId: number, userId: number) {
-	return await canModifyGroup(groupId, userId);
+	return await canModerateGroupMembers(groupId, userId);
 }
 
 export async function canViewGroup(groupId: number, userId: number) {
@@ -305,7 +326,15 @@ export async function canViewGroup(groupId: number, userId: number) {
 }
 
 export async function canDeleteGroup(groupId: number, userId: number) {
-	return await isGroupMember(groupId, userId);
+	return await isGroupAdmin(groupId, userId);
+}
+
+export async function canAddAdmins(groupId: number, userId: number) {
+	return await isGroupAdmin(groupId, userId);
+}
+
+export async function canRemoveAdmins(groupId: number, userId: number) {
+	return await isGroupAdmin(groupId, userId);
 }
 
 /**

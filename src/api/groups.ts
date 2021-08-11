@@ -1,6 +1,8 @@
+import { InvalidStateTransition } from "../errors";
 import { createJoinCode } from "../joincode";
 import { detailedEventsQuerySelector } from "../selectors";
 import prisma from "./prisma";
+import { isGroupMember } from "./users";
 
 export type GroupPreview = {
 	id: number;
@@ -14,6 +16,12 @@ export async function one(id: number) {
 			name: true,
 			joinCode: true,
 			users: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
+			admins: {
 				select: {
 					id: true,
 					name: true,
@@ -70,6 +78,51 @@ export async function removeUser(groupId: number, userId: number) {
 		data: {
 			users: {
 				delete: { id: userId },
+			},
+		},
+	});
+}
+
+export async function addAdmin(groupId: number, userId: number) {
+	return await prisma.group.update({
+		where: {
+			id: groupId,
+		},
+		data: {
+			admins: {
+				connect: {
+					id: userId,
+				},
+			},
+		},
+	});
+}
+
+export async function removeAdmin(groupId: number, userId: number) {
+	const { admins } = await prisma.group.findFirst({
+		select: {
+			admins: true,
+		},
+		where: {
+			id: groupId,
+		},
+	});
+	if (admins.length === 1 && admins[0].id === userId) {
+		// If the admin is the only admin, require them to specify a new admin
+		throw new InvalidStateTransition(
+			"cannot remove self as admin without having another admin remaining"
+		);
+	}
+
+	return await prisma.group.update({
+		where: {
+			id: groupId,
+		},
+		data: {
+			admins: {
+				delete: {
+					id: userId,
+				},
 			},
 		},
 	});
