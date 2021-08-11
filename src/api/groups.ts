@@ -166,9 +166,11 @@ export async function events(id: number) {
 export async function create({
 	name,
 	initialMemberIds,
+	creatorId,
 }: {
 	name: string;
 	initialMemberIds: number[];
+	creatorId: number;
 }) {
 	return await prisma.group.create({
 		select: {
@@ -178,6 +180,11 @@ export async function create({
 			name,
 			users: {
 				connect: initialMemberIds.map((id) => ({ id })),
+			},
+			admins: {
+				connect: {
+					id: creatorId,
+				},
 			},
 		},
 	});

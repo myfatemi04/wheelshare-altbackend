@@ -20,6 +20,7 @@ groups.post("/", async (req) => {
 	const { id } = await api.groups.create({
 		name,
 		initialMemberIds: [userId],
+		creatorId: userId,
 	});
 	return { id };
 });
