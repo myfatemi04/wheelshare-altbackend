@@ -31,7 +31,7 @@ export async function sendInvitedToCarpoolEmail(
 	const subject = `You've been invited to a carpool!`;
 	const html = `<p>Hello ${inviteeName}, </p>
 		<p>You've been invited to join the carpool <strong>${carpoolName}</strong>.</p>
-		<p>You can view the carpool <a href="https://wheelshare.app/carpool/${carpoolId}">here</a>.</p>
+		<p>You can view the carpool <a href="https://wheelshare.app/carpools/${carpoolId}">here</a>.</p>
 		`;
 
 	await sendEmail(inviteeEmail, subject, html);
@@ -49,7 +49,7 @@ export async function sendRequestedToJoinCarpoolEmail(
 	const subject = `${requester.name} wants to join your carpool!`;
 	const html = `<p>Hello ${receiver.name}, </p>
 		<p>${requester.name} wants to join your carpool <strong>${carpool.name}</strong>.</p>
-		<p>You can view the carpool <a href="https://wheelshare.app/carpool/${carpoolId}">here</a>.</p>
+		<p>You can view the carpool <a href="https://wheelshare.app/carpools/${carpoolId}">here</a>.</p>
 		`;
 
 	await sendEmail(receiver.email, subject, html);
@@ -66,7 +66,7 @@ export async function sendRequestAcceptedEmail(
 	const subject = `Your request to join ${carpool.name} has been accepted!`;
 	const html = `<p>Hello ${requester.name}, </p>
 		<p>Your request to join ${carpool.name} has been accepted.</p>
-		<p>You can view the carpool <a href="https://wheelshare.app/carpool/${carpoolId}">here</a>.</p>
+		<p>You can view the carpool <a href="https://wheelshare.app/carpools/${carpoolId}">here</a>.</p>
 		`;
 
 	await sendEmail(requester.email, subject, html);
