@@ -16,6 +16,9 @@ carpools.get("/:id", async (req) => {
 	if (!can) {
 		throw new Unauthorized();
 	}
+	if (isNaN(carpoolId)) {
+		throw new NotFound();
+	}
 
 	const carpool = await api.carpools.get(carpoolId);
 	if (!carpool) {

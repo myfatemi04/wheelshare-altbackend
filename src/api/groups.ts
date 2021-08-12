@@ -132,6 +132,18 @@ export async function all() {
 	return await prisma.group.findMany();
 }
 
+export async function withMember(userId: number) {
+	return await prisma.group.findMany({
+		where: {
+			users: {
+				some: {
+					id: userId,
+				},
+			},
+		},
+	});
+}
+
 export async function deleteOne(id: number) {
 	await prisma.event.deleteMany({
 		where: {

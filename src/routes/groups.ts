@@ -1,4 +1,5 @@
 import api from "../api";
+import { withMember } from "../api/groups";
 import { canViewGroup } from "../api/users";
 import CustomRouter from "../customrouter";
 import { Forbidden, NotFound, Unauthorized } from "../errors";
@@ -6,7 +7,14 @@ import { T } from "../validate";
 
 const groups = new CustomRouter();
 
-groups.get("/", () => api.groups.all());
+groups.get("/", async (req) => {
+	// @ts-expect-error
+	const userId = +req.session.userId;
+
+	const groups = await withMember(userId);
+
+	return groups;
+});
 
 const assertGroupInit = T.object({
 	name: T.string(),
