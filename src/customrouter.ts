@@ -1,7 +1,12 @@
 import { AssertionError } from "assert";
 import { Request, RequestHandler, Router } from "express";
 import { RouteParameters } from "express-serve-static-core";
-import { NotFound, Unauthenticated, Unauthorized } from "./errors";
+import {
+	InvalidStateTransition,
+	NotFound,
+	Unauthenticated,
+	Unauthorized,
+} from "./errors";
 
 export default class CustomRouter {
 	public readonly expressRouter = Router();
@@ -32,6 +37,9 @@ export default class CustomRouter {
 				} else if (e instanceof Unauthorized) {
 					res.status(403);
 					res.json({ status: "error", message: "unauthorized" });
+				} else if (e instanceof InvalidStateTransition) {
+					res.status(400);
+					res.json({ status: "error", message: e.message });
 				} else {
 					console.error("Unexpected server error");
 					console.error(e);
