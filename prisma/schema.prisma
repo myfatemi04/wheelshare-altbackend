@@ -16,8 +16,9 @@ model User {
   // Invitations to carpools and active requests.
   invitations Invitation[]
 
-  carpools      Carpool[]
-  groupsAsAdmin Group[]   @relation("admins", references: [id])
+  carpools         Carpool[]
+  groupsAsAdmin    Group[]   @relation("admins", references: [id])
+  carpoolsICreated Carpool[] @relation("carpool_creator")
 }
 
 model Invitation {
@@ -45,6 +46,8 @@ model Carpool {
   name        String
   members     User[]
   invitations Invitation[]
+  creatorId   Int
+  creator     User         @relation("carpool_creator", fields: [creatorId], references: [id])
 
   event   Event @relation(fields: [eventId], references: [id])
   eventId Int

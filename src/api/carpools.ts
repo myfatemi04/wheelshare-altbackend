@@ -51,6 +51,7 @@ export async function get(id: number) {
 					name: true,
 				},
 			},
+			creatorId: true,
 			invitations: {
 				select: {
 					user: {
@@ -79,7 +80,7 @@ export type CarpoolInit = {
 
 export async function create({
 	name,
-	userId,
+	userId: creatorId,
 	eventId,
 	invitedUserIds,
 }: CarpoolInit) {
@@ -89,9 +90,14 @@ export async function create({
 		},
 		data: {
 			name,
+			creator: {
+				connect: {
+					id: creatorId,
+				},
+			},
 			members: {
 				connect: {
-					id: userId,
+					id: creatorId,
 				},
 			},
 			event: {

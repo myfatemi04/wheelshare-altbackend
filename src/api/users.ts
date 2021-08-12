@@ -378,27 +378,37 @@ export async function isCarpoolMember(carpoolId: number, userId: number) {
 	return count > 0;
 }
 
+export async function isCarpoolCreator(carpoolId: number, userId: number) {
+	const carpool = await prisma.carpool.findFirst({
+		where: {
+			id: carpoolId,
+			creatorId: userId,
+		},
+	});
+	return carpool !== null;
+}
+
 export async function canManageCarpoolRequests(
 	carpoolId: number,
 	userId: number
 ) {
-	return await isCarpoolMember(carpoolId, userId);
+	return await isCarpoolCreator(carpoolId, userId);
 }
 
 export async function canManageCarpoolInvites(
 	carpoolId: number,
 	userId: number
 ) {
-	return await isCarpoolMember(carpoolId, userId);
+	return await isCarpoolCreator(carpoolId, userId);
 }
 
 export async function canViewCarpoolInvitesAndRequests(
 	carpoolId: number,
 	userId: number
 ) {
-	return await isCarpoolMember(carpoolId, userId);
+	return await isCarpoolCreator(carpoolId, userId);
 }
 
 export async function canDeleteCarpool(carpoolId: number, userId: number) {
-	return await isCarpoolMember(carpoolId, userId);
+	return await isCarpoolCreator(carpoolId, userId);
 }

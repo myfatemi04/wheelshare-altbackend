@@ -1,4 +1,8 @@
-import { sendInvitedToCarpoolEmail, sendRequestAcceptedEmail } from "../email";
+import {
+	sendInvitedToCarpoolEmail,
+	sendRequestAcceptedEmail,
+	sendRequestedToJoinCarpoolEmail,
+} from "../email";
 import { InvalidStateTransition } from "../errors";
 import prisma from "./prisma";
 
@@ -22,7 +26,15 @@ export async function create({
 			execute({ userId, carpoolId });
 		}
 	} else {
-		if (!isRequest) {
+		if (isRequest) {
+			const { creatorId } = await prisma.carpool.findFirst({
+				select: { creatorId: true },
+				where: {
+					id: carpoolId,
+				},
+			});
+			sendRequestedToJoinCarpoolEmail(userId, creatorId, carpoolId);
+		} else {
 			sendInvitedToCarpoolEmail(userId, carpoolId);
 		}
 		return await prisma.invitation.create({

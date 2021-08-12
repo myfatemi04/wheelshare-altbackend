@@ -24,6 +24,7 @@ export const carpoolsQuerySelector = {
 				name: true,
 			},
 		},
+		creatorId: true,
 	},
 } as const;
 
