@@ -169,11 +169,7 @@ export async function requestsToUser(id: number) {
 		},
 		where: {
 			carpool: {
-				members: {
-					some: {
-						id,
-					},
-				},
+				creatorId: id,
 			},
 			isRequest: true,
 		},
@@ -182,7 +178,7 @@ export async function requestsToUser(id: number) {
 	return requests;
 }
 
-// Returns invitations sent to a user
+// Returns invitations sent by a user
 export async function invitationsFromUser(id: number) {
 	const invitations = await prisma.invitation.findMany({
 		select: {
