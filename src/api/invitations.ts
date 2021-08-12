@@ -22,7 +22,9 @@ export async function create({
 			execute({ userId, carpoolId });
 		}
 	} else {
-		sendInvitedToCarpoolEmail(userId, carpoolId);
+		if (!isRequest) {
+			sendInvitedToCarpoolEmail(userId, carpoolId);
+		}
 		return await prisma.invitation.create({
 			data: {
 				userId,

@@ -52,7 +52,7 @@ groups.get("/:id", async (req) => {
 	// @ts-expect-error
 	const userId = +req.session.userId;
 
-	const can = await canViewGroup(userId, groupId);
+	const can = await canViewGroup(groupId, userId);
 	if (!can) {
 		throw new NotFound();
 	}
@@ -97,7 +97,7 @@ groups.get("/:id/events", async (req) => {
 		throw new NotFound();
 	}
 
-	const can = await canViewGroup(userId, groupId);
+	const can = await canViewGroup(groupId, userId);
 	if (!can) {
 		throw new NotFound();
 	}
