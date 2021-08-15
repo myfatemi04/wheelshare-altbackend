@@ -95,8 +95,15 @@ function calculateEndTime({
 }
 
 export async function update(eventId: number, eventUpdate: EventUpdate) {
-	const { name, startTime, duration, endDate, placeId, daysOfWeek } =
-		eventUpdate;
+	const {
+		name,
+		startTime,
+		duration,
+		endDate,
+		placeId,
+		daysOfWeek,
+		description,
+	} = eventUpdate;
 
 	duration != undefined && assertValidDuration(duration);
 
@@ -132,6 +139,7 @@ export async function update(eventId: number, eventUpdate: EventUpdate) {
 		},
 		data: {
 			name,
+			description,
 
 			startTime,
 			duration,
