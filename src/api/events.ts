@@ -98,10 +98,7 @@ export async function update(eventId: number, eventUpdate: EventUpdate) {
 	const { name, startTime, duration, endDate, placeId, daysOfWeek } =
 		eventUpdate;
 
-	assertValidDuration(duration);
-	const { latitude, longitude, formattedAddress } = await getValidPlaceDetails(
-		placeId
-	);
+	duration != undefined && assertValidDuration(duration);
 
 	let endTime: Date | undefined = undefined;
 	const isEventTimingUpdated = !!(
@@ -142,10 +139,7 @@ export async function update(eventId: number, eventUpdate: EventUpdate) {
 
 			daysOfWeek,
 
-			placeId,
-			latitude,
-			longitude,
-			formattedAddress,
+			...(placeId ? await getValidPlaceDetails(placeId) : {}),
 		},
 	});
 }
