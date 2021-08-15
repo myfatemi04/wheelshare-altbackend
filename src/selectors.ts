@@ -39,6 +39,7 @@ export const detailedEventsQuerySelector = {
 		formattedAddress: true,
 		latitude: true,
 		longitude: true,
+		description: true,
 		signups: signupsQuerySelector,
 		carpools: carpoolsQuerySelector,
 	},

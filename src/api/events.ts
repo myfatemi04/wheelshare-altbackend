@@ -58,36 +58,106 @@ export type EventInit = {
 	daysOfWeek: number;
 };
 
-export async function create(
-	{
-		name,
-		startTime,
-		duration,
-		endDate,
-		groupId,
-		placeId,
-		daysOfWeek,
-	}: EventInit,
-	creatorId: number
-) {
+export type EventUpdate = Partial<Omit<EventInit, "groupId">>;
+
+function assertValidDuration(duration: number) {
 	if (duration < 0) {
 		throw new AssertionError({ message: "duration cannot be negative" });
 	}
+}
 
+async function getValidPlaceDetails(placeId: string) {
 	const placeDetails = await getPlaceDetails(placeId);
 	if (placeDetails == null) {
 		throw new Error("invalid placeId");
 	}
+	return placeDetails;
+}
 
-	const { latitude, longitude, formattedAddress } = placeDetails;
-
+function calculateEndTime({
+	daysOfWeek,
+	endDate,
+	startTime,
+	duration,
+}: {
+	daysOfWeek: number;
+	endDate: Date;
+	startTime: Date;
+	duration: number;
+}) {
 	const recurring = daysOfWeek !== 0;
-	let endTime: Date;
 	if (!recurring) {
-		endTime = calculateSingleEventEndTime(startTime, duration);
+		return calculateSingleEventEndTime(startTime, duration);
 	} else {
-		endTime = calculateRecurringEventEndTime(startTime, duration, endDate);
+		return calculateRecurringEventEndTime(startTime, duration, endDate);
 	}
+}
+
+export async function update(eventId: number, eventUpdate: EventUpdate) {
+	const { name, startTime, duration, endDate, placeId, daysOfWeek } =
+		eventUpdate;
+
+	assertValidDuration(duration);
+	const { latitude, longitude, formattedAddress } = await getValidPlaceDetails(
+		placeId
+	);
+
+	let endTime: Date | undefined = undefined;
+	const isEventTimingUpdated = !!(
+		daysOfWeek ||
+		duration ||
+		endDate ||
+		startTime
+	);
+	if (isEventTimingUpdated) {
+		const existingEventTiming = await prisma.event.findFirst({
+			select: {
+				daysOfWeek: true,
+				duration: true,
+				startTime: true,
+				endTime: true,
+			},
+			where: { id: eventId },
+		});
+		const newEventTiming = {
+			daysOfWeek: daysOfWeek ?? existingEventTiming.daysOfWeek,
+			duration: duration ?? existingEventTiming.duration,
+			startTime: startTime ?? existingEventTiming.startTime,
+			endDate: endDate ?? existingEventTiming.endTime,
+		};
+		endTime = calculateEndTime(newEventTiming);
+	}
+
+	return await prisma.event.update({
+		where: {
+			id: eventId,
+		},
+		data: {
+			name,
+
+			startTime,
+			duration,
+			endTime,
+
+			daysOfWeek,
+
+			placeId,
+			latitude,
+			longitude,
+			formattedAddress,
+		},
+	});
+}
+
+export async function create(eventInit: EventInit, creatorId: number) {
+	const { name, startTime, duration, endDate, groupId, placeId, daysOfWeek } =
+		eventInit;
+
+	assertValidDuration(duration);
+	const { latitude, longitude, formattedAddress } = await getValidPlaceDetails(
+		placeId
+	);
+	const endTime = calculateEndTime(eventInit);
 
 	return await prisma.event.create({
 		select: {
@@ -176,3 +246,13 @@ export async function cancel(eventId: number) {
 		},
 	});
 }
+
+async function delete_(eventId: number) {
+	return await prisma.event.delete({
+		where: {
+			id: eventId,
+		},
+	});
+}
+
+export { delete_ as delete };

@@ -211,20 +211,6 @@ export async function invitationsFromUser(id: number) {
 	return invitations;
 }
 
-export async function canModifyEvent(
-	eventId: number,
-	userId: number
-): Promise<boolean> {
-	return await canViewEvent(eventId, userId);
-}
-
-export async function canAddCarpoolToEvent(
-	eventId: number,
-	userId: number
-): Promise<boolean> {
-	return await canViewEvent(eventId, userId);
-}
-
 export async function canViewEvent(
 	eventId: number,
 	userId: number
@@ -253,6 +239,65 @@ export async function canViewEvent(
 	return group !== null;
 
 	*/
+}
+
+export async function isEventCreator(
+	eventId: number,
+	userId: number
+): Promise<boolean> {
+	const event = await prisma.event.findFirst({
+		where: {
+			id: eventId,
+		},
+		select: {
+			creatorId: true,
+		},
+	});
+
+	return event !== null && event.creatorId === userId;
+}
+
+export async function canModifyEvent(
+	eventId: number,
+	userId: number
+): Promise<boolean> {
+	return await isEventCreator(eventId, userId);
+}
+
+export async function canAddCarpoolToEvent(
+	eventId: number,
+	userId: number
+): Promise<boolean> {
+	return await canViewEvent(eventId, userId);
+}
+
+async function isAdminOfGroupContainingEvent(eventId: number, userId: number) {
+	const group = await prisma.group.findFirst({
+		where: {
+			events: {
+				some: {
+					id: eventId,
+				},
+			},
+			admins: {
+				some: {
+					id: userId,
+				},
+			},
+		},
+	});
+
+	return group !== null;
+}
+
+export async function canDeleteEvent(
+	eventId: number,
+	userId: number
+): Promise<boolean> {
+	return (
+		(await isEventCreator(eventId, userId)) ||
+		(await isAdminOfGroupContainingEvent(eventId, userId))
+	);
 }
 
 export async function isGroupMember(
@@ -298,7 +343,7 @@ export async function isGroupAdmin(
 }
 
 // True if the user is a member of the group
-export async function canCreateEvent(
+export async function canCreateEventInGroup(
 	groupId: number,
 	userId: number
 ): Promise<boolean> {

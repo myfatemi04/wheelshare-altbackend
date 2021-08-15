@@ -1,6 +1,6 @@
 import { AssertionError } from "assert";
 import api from "../api";
-import { EventInit } from "../api/events";
+import { EventInit, EventUpdate } from "../api/events";
 import CustomRouter from "../customrouter";
 import { NotFound, Unauthorized } from "../errors";
 import { T } from "../validate";
@@ -29,12 +29,50 @@ events.post("/", async (req) => {
 	// @ts-expect-error
 	const userId = +req.session.userId;
 	const event = assertEventInit(req.body);
-	const can = await api.users.canCreateEvent(event.groupId, userId);
+	const can = await api.users.canCreateEventInGroup(event.groupId, userId);
 	if (!can) {
 		throw new Unauthorized();
 	}
 
 	await api.events.create(event, userId);
+});
+
+events.delete("/:id", async (req) => {
+	// @ts-expect-error
+	const userId = +req.session.userId;
+	const eventId = +req.params.id;
+	const can = await api.users.canDeleteEvent(eventId, userId);
+	if (!can) {
+		throw new Unauthorized();
+	}
+	await api.events.delete(eventId);
+});
+
+const assertEventUpdate: (v: any) => EventUpdate = T.object({
+	name: T.optional(T.string()),
+	startTime: T.optional(T.date()),
+	duration: T.optional(T.number()),
+	placeId: T.optional(T.string()),
+	endDate: T.optional(T.anyOf([T.date(), T.exact<null>(null)])),
+	daysOfWeek: T.optional((d) => {
+		if (typeof d === "number" && isFinite(d)) {
+			if (Number.isInteger(d) && d <= 0b0111_1111 && d >= 0b0000_0000) {
+				return d;
+			}
+		}
+		throw new AssertionError({ message: "expected 0b0XXX_XXXX" });
+	}),
+});
+events.post("/:id/update", async (req) => {
+	// @ts-expect-error
+	const userId = +req.session.userId;
+	const eventId = +req.params.id;
+	if (isNaN(eventId)) {
+		throw new NotFound();
+	}
+	const eventUpdate = assertEventUpdate(req.body);
+	await api.events.update(eventId, eventUpdate);
+	return await api.events.get(eventId);
 });
 
 events.post("/:id/cancel", async (req) => {

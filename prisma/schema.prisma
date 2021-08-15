@@ -82,6 +82,8 @@ model Event {
   // 0SMTWTFS
   daysOfWeek Int
 
+  description String @default("")
+
   placeId          String
   formattedAddress String
   latitude         Float
