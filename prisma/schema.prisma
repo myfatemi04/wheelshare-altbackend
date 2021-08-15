@@ -19,6 +19,7 @@ model User {
   carpools         Carpool[]
   groupsAsAdmin    Group[]   @relation("admins", references: [id])
   carpoolsICreated Carpool[] @relation("carpool_creator")
+  eventsICreated   Event[]   @relation("event_creator")
 }
 
 model Invitation {
@@ -65,8 +66,11 @@ model Group {
 model Event {
   id      Int    @id @default(autoincrement())
   name    String
-  groupId Int
-  group   Group  @relation(fields: groupId, references: [id])
+  groupId Int?
+  group   Group? @relation(fields: groupId, references: [id])
+
+  creatorId Int
+  creator   User @relation("event_creator", fields: creatorId, references: [id])
 
   startTime DateTime
   duration  Int // Minutes

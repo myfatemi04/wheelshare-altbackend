@@ -1,6 +1,7 @@
 import api from "../api";
 import prisma from "../api/prisma";
 import CustomRouter from "../customrouter";
+import { T } from "../validate";
 
 const users = new CustomRouter();
 
@@ -21,11 +22,31 @@ users.get("/@me", async (req) => {
 	return user;
 });
 
+const assertEventQueryInit = T.anyOf<
+	| {}
+	| {
+			lastEndTime: Date;
+			lastId: number;
+	  }
+>([
+	T.object({} as const),
+	T.object({
+		lastEndTime: T.date(),
+		lastId: T.number(),
+	}),
+]);
+
 users.get("/@me/active_events", async (req) => {
 	// @ts-expect-error
 	const userId = +req.session.userId;
-	const events = await api.users.activeEvents(userId);
-	return events;
+	const eventQuery = assertEventQueryInit(req.query);
+
+	const last =
+		"lastId" in eventQuery
+			? { id: eventQuery.lastId, endTime: eventQuery.lastEndTime }
+			: null;
+
+	return await api.events.mostRecentForUser(userId, last);
 });
 
 users.get("/@me/active_carpools", async (req) => {

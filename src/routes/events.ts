@@ -9,8 +9,6 @@ const events = new CustomRouter();
 
 export default events;
 
-events.get("/", api.events.all);
-
 const assertEventInit: (v: any) => EventInit = T.object({
 	name: T.string(),
 	startTime: T.date(),
@@ -31,12 +29,12 @@ events.post("/", async (req) => {
 	// @ts-expect-error
 	const userId = +req.session.userId;
 	const event = assertEventInit(req.body);
-	const canCreateEvent = await api.users.canCreateEvent(event.groupId, userId);
-	if (!canCreateEvent) {
+	const can = await api.users.canCreateEvent(event.groupId, userId);
+	if (!can) {
 		throw new Unauthorized();
 	}
 
-	await api.events.create(event);
+	await api.events.create(event, userId);
 });
 
 events.post("/:id/cancel", async (req) => {

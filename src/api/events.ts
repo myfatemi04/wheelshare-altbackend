@@ -11,16 +11,40 @@ import {
 } from "../selectors";
 import prisma from "./prisma";
 
-export async function all() {
+const EVENT_FEED_QUERY_TAKE_AMOUNT = 10;
+
+export async function mostRecentForUser(
+	userId: number,
+	last: { endTime: Date; id: number } | null
+) {
 	return await prisma.event.findMany({
-		include: {
-			group: true,
-			signups: signupsQuerySelector,
-			carpools: carpoolsQuerySelector,
+		...detailedEventsQuerySelector,
+		where: {
+			AND: [
+				{
+					// Verify the event is visible by the user
+					OR: [
+						{ group: { users: { some: { id: userId } } } },
+						{ signups: { some: { userId } } },
+						{ creatorId: userId },
+					],
+				},
+				last
+					? {
+							// Verify the event is after the cursor
+							OR: [
+								// If the end times are equivalent, take events in descending order by id
+								{ endTime: last.endTime, id: { lt: last.id } },
+								// If the end times are not equivalent, take events in descending order by endTime
+								{ endTime: { lt: last.endTime } },
+							],
+					  }
+					: {},
+			],
+			...(last ? { endTime: { lt: last.endTime } } : {}),
 		},
-		orderBy: {
-			endTime: "desc",
-		},
+		orderBy: [{ endTime: "desc" }, { id: "desc" }],
+		take: EVENT_FEED_QUERY_TAKE_AMOUNT,
 	});
 }
 
@@ -34,15 +58,18 @@ export type EventInit = {
 	daysOfWeek: number;
 };
 
-export async function create({
-	name,
-	startTime,
-	duration,
-	endDate,
-	groupId,
-	placeId,
-	daysOfWeek,
-}: EventInit) {
+export async function create(
+	{
+		name,
+		startTime,
+		duration,
+		endDate,
+		groupId,
+		placeId,
+		daysOfWeek,
+	}: EventInit,
+	creatorId: number
+) {
 	if (duration < 0) {
 		throw new AssertionError({ message: "duration cannot be negative" });
 	}
@@ -77,6 +104,12 @@ export async function create({
 			startTime,
 			duration,
 			endTime,
+
+			creator: {
+				connect: {
+					id: creatorId,
+				},
+			},
 
 			daysOfWeek,
 

@@ -1,3 +1,10 @@
+const userPreviewQuerySelector = {
+	select: {
+		id: true,
+		name: true,
+	},
+} as const;
+
 export const signupsQuerySelector = {
 	select: {
 		latitude: true,
@@ -5,12 +12,7 @@ export const signupsQuerySelector = {
 		placeId: true,
 		formattedAddress: true,
 		canDrive: true,
-		user: {
-			select: {
-				id: true,
-				name: true,
-			},
-		},
+		user: userPreviewQuerySelector,
 	},
 } as const;
 
@@ -18,12 +20,7 @@ export const carpoolsQuerySelector = {
 	select: {
 		id: true,
 		name: true,
-		members: {
-			select: {
-				id: true,
-				name: true,
-			},
-		},
+		members: userPreviewQuerySelector,
 		creatorId: true,
 	},
 } as const;
@@ -33,6 +30,7 @@ export const detailedEventsQuerySelector = {
 		id: true,
 		name: true,
 		group: true,
+		creator: userPreviewQuerySelector,
 		startTime: true,
 		duration: true,
 		endTime: true,

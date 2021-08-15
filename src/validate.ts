@@ -178,7 +178,7 @@ export const T = {
 	extends<T extends Record<string, (...args: any) => any>>(schema: T) {
 		return T.object(schema, true);
 	},
-	anyOf<F extends (...args: any) => any>(checkers: F[]) {
+	anyOf<V>(checkers: ((v: unknown) => V)[]) {
 		type ReturnTypeUnion = ReturnType<typeof checkers[number]>;
 		if (checkers.length === 0) {
 			throw new Error("union type cannot be created with 0 validators");
@@ -187,6 +187,7 @@ export const T = {
 			const expectedMessages = [];
 			for (let checker of checkers) {
 				try {
+					// @ts-ignore
 					return checker(x);
 				} catch (e) {
 					const what = e.message.slice("expected ".length);
