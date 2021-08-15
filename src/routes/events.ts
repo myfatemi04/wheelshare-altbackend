@@ -16,6 +16,7 @@ const assertEventInit: (v: any) => EventInit = T.object({
 	placeId: T.string(),
 	groupId: T.optional(T.number()),
 	endDate: T.anyOf([T.date(), T.exact<null>(null)]),
+	description: T.optional(T.string()),
 	daysOfWeek: (d) => {
 		if (typeof d === "number" && isFinite(d)) {
 			if (Number.isInteger(d) && d <= 0b0111_1111 && d >= 0b0000_0000) {
@@ -54,6 +55,7 @@ const assertEventUpdate: (v: any) => EventUpdate = T.object({
 	duration: T.optional(T.number()),
 	placeId: T.optional(T.string()),
 	endDate: T.optional(T.anyOf([T.date(), T.exact<null>(null)])),
+	description: T.optional(T.string()),
 	daysOfWeek: T.optional((d) => {
 		if (typeof d === "number" && isFinite(d)) {
 			if (Number.isInteger(d) && d <= 0b0111_1111 && d >= 0b0000_0000) {

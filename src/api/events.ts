@@ -56,6 +56,7 @@ export type EventInit = {
 	groupId: number;
 	placeId: string;
 	daysOfWeek: number;
+	description: string;
 };
 
 export type EventUpdate = Partial<Omit<EventInit, "groupId">>;
