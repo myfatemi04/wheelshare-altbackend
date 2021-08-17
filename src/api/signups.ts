@@ -6,11 +6,13 @@ export async function update({
 	userId,
 	placeId,
 	canDrive,
+	note,
 }: {
 	eventId: number;
 	userId: number;
 	placeId: string | null;
 	canDrive: boolean;
+	note?: string;
 }) {
 	let details: PlaceDetails | {} = {};
 	if (typeof placeId === "string") {
@@ -44,6 +46,7 @@ export async function update({
 		update: {
 			placeId,
 			canDrive,
+			note,
 			...details,
 		},
 	});

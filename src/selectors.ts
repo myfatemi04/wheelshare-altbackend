@@ -12,6 +12,7 @@ export const signupsQuerySelector = {
 		placeId: true,
 		formattedAddress: true,
 		canDrive: true,
+		note: true,
 		user: userPreviewQuerySelector,
 	},
 } as const;

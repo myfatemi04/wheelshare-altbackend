@@ -108,5 +108,7 @@ model EventSignup {
   latitude         Float?
   longitude        Float?
 
+  note String @default("")
+
   @@id([eventId, userId])
 }
