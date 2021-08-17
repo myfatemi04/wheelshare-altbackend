@@ -64,6 +64,7 @@ export async function get(id: number) {
 					isRequest: true,
 				},
 			},
+			note: true,
 		},
 		where: {
 			id,
