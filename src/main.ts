@@ -3,7 +3,8 @@ import { json } from "body-parser";
 import cors from "cors";
 import express from "express";
 import authenticate, { session } from "./authenticate";
-import { getUserIdFromIonCode as getUserIdFromIonCode } from "./auth_ion";
+import { getUserIDFromGoogleCode } from "./auth_google";
+import { getUserIdFromIonCode } from "./auth_ion";
 import "./env";
 import rtr from "./routes";
 import sessions from "./sessions";
@@ -27,10 +28,26 @@ const assertSessionInit = T.object({
 	code: T.string(),
 	redirectUrl: T.string(),
 });
-app.post("/create_session", async (req, res) => {
+
+const providerAuthenticators = {
+	ion: getUserIdFromIonCode,
+	google: getUserIDFromGoogleCode,
+};
+app.post("/auth/:provider", async (req, res) => {
 	const { code, redirectUrl } = assertSessionInit(req.body);
+	const provider = req.params.provider;
+	if (!(provider in providerAuthenticators)) {
+		res.json({
+			status: "error",
+			message: `Unknown provider ${provider}`,
+		});
+		res.status(400);
+		return;
+	}
+	const getOrCreateUserId = providerAuthenticators[provider];
+
 	try {
-		const userId = await getUserIdFromIonCode(code, redirectUrl);
+		const userId = await getOrCreateUserId(code, redirectUrl);
 		const sessionId = sessions.createSession(userId);
 
 		res.json({
@@ -42,7 +59,7 @@ app.post("/create_session", async (req, res) => {
 		res.json({
 			status: "error",
 		});
-		console.error("/create_session:", e);
+		console.error(`/auth/${provider}:`, e);
 	}
 });
 
