@@ -23,6 +23,7 @@ export const carpoolsQuerySelector = {
 		name: true,
 		members: userPreviewQuerySelector,
 		creatorId: true,
+		note: true,
 	},
 } as const;
 

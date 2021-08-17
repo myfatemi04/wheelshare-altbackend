@@ -429,6 +429,10 @@ export async function isCarpoolCreator(carpoolId: number, userId: number) {
 	return carpool !== null;
 }
 
+export async function canSetCarpoolNote(carpoolId: number, userId: number) {
+	return await isCarpoolCreator(carpoolId, userId);
+}
+
 export async function canManageCarpoolRequests(
 	carpoolId: number,
 	userId: number

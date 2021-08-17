@@ -1,3 +1,4 @@
+import { AssertionError } from "assert";
 import api from "../api";
 import prisma from "../api/prisma";
 import CustomRouter from "../customrouter";
@@ -55,6 +56,21 @@ carpools.post("/:id/request", async (req) => {
 		carpoolId,
 		isRequest: true,
 	});
+});
+
+carpools.post("/:id/set_note", async (req) => {
+	const carpoolId = +req.params.id;
+	// @ts-expect-error
+	const userId: number = req.session.userId;
+	const can = await api.users.canSetCarpoolNote(carpoolId, userId);
+	if (!can) {
+		throw new Unauthorized();
+	}
+	const note = req.body.note;
+	if (typeof note !== "string") {
+		throw new AssertionError({ message: "expected note to be a string" });
+	}
+	await api.carpools.setNote(carpoolId, note);
 });
 
 const assertAcceptRequestInit = T.object({

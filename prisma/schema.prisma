@@ -50,6 +50,8 @@ model Carpool {
   creatorId   Int
   creator     User         @relation("carpool_creator", fields: [creatorId], references: [id])
 
+  note String @default("")
+
   event   Event @relation(fields: [eventId], references: [id])
   eventId Int
 }

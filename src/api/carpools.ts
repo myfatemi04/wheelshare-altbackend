@@ -221,3 +221,14 @@ export async function potentialInvitees(carpoolId: number) {
 
 	return availableMembers;
 }
+
+export async function setNote(carpoolId: number, note: string) {
+	return await prisma.carpool.update({
+		where: {
+			id: carpoolId,
+		},
+		data: {
+			note,
+		},
+	});
+}
