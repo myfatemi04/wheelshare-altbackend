@@ -251,6 +251,20 @@ export async function cancel(eventId: number) {
 }
 
 async function delete_(eventId: number) {
+	// First, we need to delete carpools
+	await prisma.carpool.deleteMany({
+		where: {
+			eventId,
+		},
+	});
+
+	// Then, we need to delete eventSignups
+	await prisma.eventSignup.deleteMany({
+		where: {
+			eventId,
+		},
+	});
+
 	return await prisma.event.delete({
 		where: {
 			id: eventId,
