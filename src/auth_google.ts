@@ -75,6 +75,7 @@ export async function getUserIDFromGoogleCode(
 	redirectUrl: string
 ): Promise<number> {
 	const profile = await getGoogleProfile(code, redirectUrl);
+	console.log(profile);
 	console.log("Authenticated Google user with email", profile.email);
 	const user = await prisma.user.findFirst({
 		where: {
