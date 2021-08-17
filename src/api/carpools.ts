@@ -43,6 +43,9 @@ export async function get(id: number) {
 					latitude: true,
 					longitude: true,
 					placeId: true,
+					startTime: true,
+					duration: true,
+					endTime: true,
 				},
 			},
 			members: {
