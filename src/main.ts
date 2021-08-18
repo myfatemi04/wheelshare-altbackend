@@ -5,6 +5,7 @@ import express from "express";
 import authenticate, { session } from "./authenticate";
 import { getUserIDFromGoogleCode } from "./auth_google";
 import { getUserIdFromIonCode } from "./auth_ion";
+import { sendErrorReportEmail } from "./email";
 import "./env";
 import rtr from "./routes";
 import sessions from "./sessions";
@@ -61,6 +62,29 @@ app.post("/auth/:provider", async (req, res) => {
 		});
 		console.error(`/auth/${provider}:`, e);
 	}
+});
+
+app.post("/user_reported_error", (req, res) => {
+	if (typeof req.body.error !== "string") {
+		res.json({ status: "error", message: "expected string for error text" });
+		res.status(400);
+		return;
+	}
+
+	// @ts-expect-error
+	const userId = req.session ? +req.session?.userId : undefined;
+
+	console.log("Received error report from", userId, "-", req.body.error);
+
+	sendErrorReportEmail(req.body.error, userId)
+		.then(() => {
+			res.json({ status: "success" });
+		})
+		.catch((e) => {
+			console.error(e);
+			res.json({ status: "error", message: "internal server error" });
+			res.status(500);
+		});
 });
 
 try {
