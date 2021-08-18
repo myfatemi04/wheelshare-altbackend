@@ -257,6 +257,44 @@ export async function isEventCreator(
 	return event !== null && event.creatorId === userId;
 }
 
+export async function canSignUpForEvent(eventId: number, userId: number) {
+	const event = await prisma.event.findFirst({
+		where: {
+			id: eventId,
+		},
+		select: {
+			creatorId: true,
+			groupId: true,
+		},
+	});
+
+	if (event.creatorId === userId) {
+		return true;
+	}
+
+	if (event.groupId !== null) {
+		// There is a group for the event...
+		const group = await prisma.group.findFirst({
+			select: { id: true },
+			where: {
+				id: event.groupId,
+				users: {
+					some: {
+						id: userId,
+					},
+				},
+			},
+		});
+
+		// Check if a group with this user as a member exists
+		if (group !== null) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 export async function canModifyEvent(
 	eventId: number,
 	userId: number

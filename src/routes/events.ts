@@ -119,7 +119,7 @@ events.post("/:id/signup", async (req) => {
 		throw new AssertionError({ message: "id is not number" });
 	}
 
-	const can = await api.users.canModifyEvent(eventId, userId);
+	const can = await api.users.canSignUpForEvent(eventId, userId);
 	if (!can) {
 		throw new Unauthorized();
 	}
