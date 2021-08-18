@@ -20,6 +20,7 @@ model User {
   groupsAsAdmin    Group[]   @relation("admins", references: [id])
   carpoolsICreated Carpool[] @relation("carpool_creator")
   eventsICreated   Event[]   @relation("event_creator")
+  messages         Message[]
 }
 
 model Invitation {
@@ -52,8 +53,9 @@ model Carpool {
 
   note String @default("")
 
-  event   Event @relation(fields: [eventId], references: [id])
-  eventId Int
+  event    Event     @relation(fields: [eventId], references: [id])
+  eventId  Int
+  messages Message[]
 }
 
 model Group {
@@ -113,4 +115,22 @@ model EventSignup {
   note String @default("")
 
   @@id([eventId, userId])
+}
+
+model Message {
+  id      Int    @id @default(autoincrement())
+  content String
+
+  carpoolId Int
+  carpool   Carpool @relation(fields: [carpoolId], references: [id])
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  //  replies      Message[] @relation("message_replies")
+  //  replyId      Int
+  //  replyMessage Message   @relation("message_replies", fields: [replyId], references: [id])
+
+  removed  Boolean  @default(false)
+  sentTime DateTime
 }

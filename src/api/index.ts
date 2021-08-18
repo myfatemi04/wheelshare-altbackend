@@ -4,6 +4,7 @@ import * as groups from "./groups";
 import * as signups from "./signups";
 import * as users from "./users";
 import * as invitations from "./invitations";
+import * as messages from "./messages";
 
 const api = {
   carpools,
@@ -12,6 +13,7 @@ const api = {
   signups,
   users,
   invitations,
+  messages
 };
 
 export default api;

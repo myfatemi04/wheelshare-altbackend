@@ -1,7 +1,9 @@
-import { Invitation } from "@prisma/client";
+import { Invitation, Message } from "@prisma/client";
 import { sendInvitedToCarpoolEmail } from "../email";
 import { NotFound } from "../errors";
 import prisma from "./prisma";
+
+const NUMBER_MESSAGES_PAGINATION = 25;
 
 export async function invitationsAndRequests(
 	carpoolId: number
@@ -235,4 +237,32 @@ export async function setNote(carpoolId: number, note: string) {
 			note,
 		},
 	});
+}
+
+export async function pagination(carpoolId: number, beforeMessageTimestamp: Date | null): Promise<Message[]> {
+  if(beforeMessageTimestamp == null) {
+		beforeMessageTimestamp = new Date();
+	}
+
+	const messages = await prisma.carpool.findFirst({
+		select: {
+			messages: true
+		},
+		where: {
+			id: carpoolId
+		}
+	}).messages;
+
+	let index = messages.length;
+	while(messages[index].sentTime.getTime() != beforeMessageTimestamp.getTime() && index != 0) {
+		index -= NUMBER_MESSAGES_PAGINATION;
+		index = Math.max(0, index);
+	}
+
+	let start = Math.max(0, index - NUMBER_MESSAGES_PAGINATION);
+	let newMessages: Message[] = Array(index - start);
+	for(let i = start; i < index; i++) {
+		newMessages[i - start] = messages[i];
+	}
+	return newMessages;
 }
