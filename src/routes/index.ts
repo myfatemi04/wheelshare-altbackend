@@ -1,5 +1,7 @@
+import { AssertionError } from "assert";
 import api from "../api";
 import CustomRouter from "../customrouter";
+import { sendErrorReportEmail } from "../email";
 import { getPlaceDetails } from "../googlemaps";
 import carpools from "./carpools";
 import events from "./events";
@@ -12,8 +14,6 @@ rtr.use("/groups/", groups.expressRouter);
 rtr.use("/carpools/", carpools.expressRouter);
 rtr.use("/users/", users.expressRouter);
 rtr.use("/events/", events.expressRouter);
-
-rtr.get("/place/:id", (req) => getPlaceDetails(req.params.id));
 
 rtr.get(
 	"/resolve_code/:code",
