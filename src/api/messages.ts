@@ -1,20 +1,5 @@
 import prisma from './prisma';
 
-export async function carpool(carpoolId: number) {
-  return await prisma.message.findMany({
-    select: {
-      id: true,
-      content: true,
-      userId: true,
-      removed: true,
-      sentTime: true
-    },
-    where: {
-      carpoolId: carpoolId
-    }
-  })
-}
-
 export async function send(userId: number, carpoolId: number, content: string) {
   return await prisma.message.create({
     select: {
