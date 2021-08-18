@@ -71,3 +71,34 @@ export async function sendRequestAcceptedEmail(
 
 	await sendEmail(requester.email, subject, html);
 }
+
+export async function sendErrorReportEmail(error: string, userId?: number) {
+	const sender = userId
+		? await prisma.user.findFirst({
+				select: { name: true, email: true },
+				where: { id: userId },
+		  })
+		: null;
+
+	const subject = `Error Report`;
+	const html = `<p>RUH ROH</p>
+		<p>There was an error in the application. ${
+			sender
+				? `Report sent by ${sender.name} (${sender.email})`
+				: "Report sent by anonymous."
+		}</p>
+		<pre>${error}</pre>
+		`;
+
+	const data: mail.MailDataRequired = {
+		subject,
+		html,
+		to: "myfatemi04@gmail.com",
+		cc: ["nitin.kanchinadam@gmail.com", "joshua12696@gmail.com"],
+		from: "notifications@wheelshare.app",
+	};
+
+	const [response] = await mail.send(data, false);
+
+	return response;
+}
