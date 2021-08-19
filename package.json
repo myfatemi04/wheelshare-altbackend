@@ -16,8 +16,8 @@
 	},
 	"scripts": {
 		"dev": "ts-node src/main.ts",
-		"build": "prisma db push && tsc",
-		"start": "node dist/main.js"
+		"build": "tsc",
+		"start": "prisma db push && node dist/main.js"
 	},
 	"dependencies": {
 		"@prisma/client": "^2.25.0",
