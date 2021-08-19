@@ -239,7 +239,7 @@ export async function setNote(carpoolId: number, note: string) {
 	});
 }
 
-export async function pagination(
+export async function messagePagination(
 	carpoolId: number,
 	beforeMessageTimestamp: Date | null
 ): Promise<Message[]> {
