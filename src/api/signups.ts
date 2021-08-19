@@ -40,8 +40,14 @@ export async function update({
 					id: userId,
 				},
 			},
-			placeId,
-			...details,
+			...(placeId !== null
+				? { placeId, ...details }
+				: {
+						placeId: null,
+						latitude: null,
+						longitude: null,
+						formattedAddress: null,
+				  }),
 		},
 		update: {
 			placeId,
