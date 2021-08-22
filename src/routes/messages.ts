@@ -35,5 +35,5 @@ messages.post('/remove_message', async (req) => {
     throw new Unauthorized();
   }
 
-  api.messages.remove(id);
+  await api.messages.remove(id);
 })
