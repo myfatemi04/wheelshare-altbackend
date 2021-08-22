@@ -1,6 +1,6 @@
 import api from "../api";
 import prisma from "../api/prisma";
-import { getUserProfileForSelf } from "../api/users";
+import { getUserProfileForPeer, getUserProfileForSelf } from "../api/users";
 import CustomRouter from "../customrouter";
 import { T } from "../validate";
 
@@ -82,3 +82,23 @@ users.get("/@me/sent_requests_and_invites", async (req) => {
 
 	return [...requests, ...invites];
 });
+
+const assertString = T.string();
+
+users.post("/@me/bio", async (req) => {
+	// @ts-expect-error
+	const userId = +req.session.userId;
+	const bio = assertString(req.body.bio);
+	return await api.users.updateUserBio(userId, bio);
+});
+
+/***********************************************\
+ PEER USER APIS
+\***********************************************/
+
+const assertNumber = T.number();
+
+users.get(
+	"/:id",
+	async (req) => await getUserProfileForPeer(assertNumber(req.params.id))
+);

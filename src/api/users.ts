@@ -60,6 +60,17 @@ export async function getUserByEmail(email: string) {
 	});
 }
 
+export async function updateUserBio(id: number, bio: string) {
+	return await prisma.user.update({
+		where: {
+			id,
+		},
+		data: {
+			bio,
+		},
+	});
+}
+
 // Context: From the homepage
 export function activeCarpools(userId: number) {
 	const now = new Date();
