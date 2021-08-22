@@ -1,6 +1,7 @@
 import { Invitation } from "@prisma/client";
 import { sendInvitedToCarpoolEmail } from "../email";
 import { NotFound } from "../errors";
+import { userPreviewQuerySelector } from "../selectors";
 import prisma from "./prisma";
 
 export async function invitationsAndRequests(
@@ -48,21 +49,11 @@ export async function get(id: number) {
 					endTime: true,
 				},
 			},
-			members: {
-				select: {
-					id: true,
-					name: true,
-				},
-			},
+			members: userPreviewQuerySelector,
 			creatorId: true,
 			invitations: {
 				select: {
-					user: {
-						select: {
-							id: true,
-							name: true,
-						},
-					},
+					user: userPreviewQuerySelector,
 					sentTime: true,
 					isRequest: true,
 				},
@@ -185,12 +176,7 @@ export async function potentialInvitees(carpoolId: number) {
 
 	const signups = await prisma.eventSignup.findMany({
 		select: {
-			user: {
-				select: {
-					id: true,
-					name: true,
-				},
-			},
+			user: userPreviewQuerySelector,
 			latitude: true,
 			longitude: true,
 		},

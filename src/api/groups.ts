@@ -1,6 +1,9 @@
 import { InvalidStateTransition } from "../errors";
 import { createJoinCode } from "../joincode";
-import { detailedEventsQuerySelector } from "../selectors";
+import {
+	detailedEventsQuerySelector,
+	userPreviewQuerySelector,
+} from "../selectors";
 import prisma from "./prisma";
 import { isGroupMember } from "./users";
 
@@ -15,18 +18,8 @@ export async function one(id: number) {
 			id: true,
 			name: true,
 			joinCode: true,
-			users: {
-				select: {
-					id: true,
-					name: true,
-				},
-			},
-			admins: {
-				select: {
-					id: true,
-					name: true,
-				},
-			},
+			users: userPreviewQuerySelector,
+			admins: userPreviewQuerySelector,
 			events: detailedEventsQuerySelector,
 		},
 		where: {

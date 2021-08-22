@@ -1,6 +1,7 @@
 import fetch from "node-fetch";
 import { AuthorizationCode } from "simple-oauth2";
 import prisma from "./api/prisma";
+import { createUser, getUserByEmail } from "./api/users";
 
 export const authorizationCode = new AuthorizationCode({
 	client: {
@@ -100,19 +101,12 @@ export async function getUserIdFromIonCode(
 	redirectUrl: string
 ): Promise<number> {
 	const profile = await getIonProfile(code, redirectUrl);
-	const user = await prisma.user.findFirst({
-		where: { email: profile.tj_email },
-	});
+	const user = await getUserByEmail(profile.tj_email);
 
 	if (user == null) {
-		const { id } = await prisma.user.create({
-			select: {
-				id: true,
-			},
-			data: {
-				name: profile.display_name,
-				email: profile.tj_email,
-			},
+		const id = await createUser({
+			name: profile.display_name,
+			email: profile.tj_email,
 		});
 		return id;
 	} else {

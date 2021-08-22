@@ -20,6 +20,13 @@ model User {
   groupsAsAdmin    Group[]   @relation("admins", references: [id])
   carpoolsICreated Carpool[] @relation("carpool_creator")
   eventsICreated   Event[]   @relation("event_creator")
+
+  bio String @default("")
+
+  // verified Boolean @default(false)
+
+  // sendInvitationsForExternalAccess     InvitationForExternalAccess[] @relation("invitation_for_external_access_creator")
+  // receivedInvitationsForExternalAccess InvitationForExternalAccess[] @relation("invitation_for_external_access_recipient")
 }
 
 model Invitation {
@@ -114,3 +121,14 @@ model EventSignup {
 
   @@id([eventId, userId])
 }
+
+// model InvitationForExternalAccess {
+//   identifer String @id
+
+//   creatorId Int
+//   creator   User     @relation("invitation_for_external_access_creator", fields: creatorId, references: [id])
+//   createdAt DateTime @default(now())
+
+//   recipientId Int?
+//   recipient   User? @relation("invitation_for_external_access_recipient", fields: recipientId, references: [id])
+// }

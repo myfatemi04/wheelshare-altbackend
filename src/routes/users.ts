@@ -1,5 +1,6 @@
 import api from "../api";
 import prisma from "../api/prisma";
+import { getUserProfileForSelf } from "../api/users";
 import CustomRouter from "../customrouter";
 import { T } from "../validate";
 
@@ -9,8 +10,8 @@ export default users;
 
 users.get("/@me", async (req) => {
 	// @ts-expect-error
-	const userId = +req.session.userId;
-	if (!isFinite(userId)) {
+	const id = +req.session.userId;
+	if (!isFinite(id)) {
 		console.warn(
 			"Invalid user ID, but made it through API auth: ",
 			// @ts-expect-error
@@ -18,8 +19,7 @@ users.get("/@me", async (req) => {
 		);
 		throw new Error("???");
 	}
-	const user = await prisma.user.findFirst({ where: { id: userId } });
-	return user;
+	return await getUserProfileForSelf(id);
 });
 
 const assertEventQueryInit = T.anyOf<

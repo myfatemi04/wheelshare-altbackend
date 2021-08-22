@@ -1,7 +1,8 @@
-const userPreviewQuerySelector = {
+export const userPreviewQuerySelector = {
 	select: {
 		id: true,
 		name: true,
+		bio: true,
 	},
 } as const;
 

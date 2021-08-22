@@ -1,5 +1,64 @@
-import { detailedEventsQuerySelector } from "../selectors";
+import {
+	detailedEventsQuerySelector,
+	userPreviewQuerySelector,
+} from "../selectors";
 import prisma from "./prisma";
+
+/**
+ * Creates a new user based on a name and email, returning the ID of the newly-created user.
+ */
+export async function createUser({
+	name,
+	email,
+}: {
+	name: string;
+	email: string;
+}): Promise<number> {
+	const { id } = await prisma.user.create({
+		select: {
+			id: true,
+		},
+		data: {
+			name,
+			email,
+		},
+	});
+	return id;
+}
+
+export async function getUserProfileForSelf(id: number) {
+	return await prisma.user.findFirst({
+		select: {
+			id: true,
+			name: true,
+			bio: true,
+			email: true,
+		},
+		where: {
+			id,
+		},
+	});
+}
+
+export async function getUserProfileForPeer(id: number) {
+	return await prisma.user.findFirst({
+		select: {
+			id: true,
+			name: true,
+			bio: true,
+			email: true, // TODO remove?
+		},
+		where: {
+			id,
+		},
+	});
+}
+
+export async function getUserByEmail(email: string) {
+	return await prisma.user.findFirst({
+		where: { email },
+	});
+}
 
 // Context: From the homepage
 export function activeCarpools(userId: number) {
@@ -8,12 +67,7 @@ export function activeCarpools(userId: number) {
 		select: {
 			id: true,
 			name: true,
-			members: {
-				select: {
-					id: true,
-					name: true,
-				},
-			},
+			members: userPreviewQuerySelector,
 			event: {
 				select: {
 					id: true,
@@ -97,12 +151,7 @@ export function allEvents(userId: number) {
 export async function requestsFromUser(id: number) {
 	const requests = await prisma.invitation.findMany({
 		select: {
-			user: {
-				select: {
-					id: true,
-					name: true,
-				},
-			},
+			user: userPreviewQuerySelector,
 			carpool: {
 				select: {
 					id: true,
@@ -124,12 +173,7 @@ export async function requestsFromUser(id: number) {
 export async function invitationsToUser(id: number) {
 	const invitations = await prisma.invitation.findMany({
 		select: {
-			user: {
-				select: {
-					id: true,
-					name: true,
-				},
-			},
+			user: userPreviewQuerySelector,
 			carpool: {
 				select: {
 					id: true,
@@ -152,12 +196,7 @@ export async function invitationsToUser(id: number) {
 export async function requestsToUser(id: number) {
 	const requests = await prisma.invitation.findMany({
 		select: {
-			user: {
-				select: {
-					id: true,
-					name: true,
-				},
-			},
+			user: userPreviewQuerySelector,
 			carpool: {
 				select: {
 					id: true,
@@ -182,12 +221,7 @@ export async function requestsToUser(id: number) {
 export async function invitationsFromUser(id: number) {
 	const invitations = await prisma.invitation.findMany({
 		select: {
-			user: {
-				select: {
-					id: true,
-					name: true,
-				},
-			},
+			user: userPreviewQuerySelector,
 			carpool: {
 				select: {
 					id: true,

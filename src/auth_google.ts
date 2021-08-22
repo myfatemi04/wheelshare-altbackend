@@ -8,6 +8,7 @@
 import fetch from "node-fetch";
 import { AuthorizationCode } from "simple-oauth2";
 import prisma from "./api/prisma";
+import { createUser, getUserByEmail } from "./api/users";
 
 export interface GoogleProfile {
 	id: string; // A string of digits
@@ -75,23 +76,12 @@ export async function getUserIDFromGoogleCode(
 	redirectUrl: string
 ): Promise<number> {
 	const profile = await getGoogleProfile(code, redirectUrl);
-	console.log(profile);
-	console.log("Authenticated Google user with email", profile.email);
-	const user = await prisma.user.findFirst({
-		where: {
-			email: profile.email,
-		},
-	});
+	const user = await getUserByEmail(profile.email);
 
 	if (user == null) {
-		const { id } = await prisma.user.create({
-			select: {
-				id: true,
-			},
-			data: {
-				name: profile.name,
-				email: profile.email,
-			},
+		const id = await createUser({
+			name: profile.name,
+			email: profile.email,
 		});
 		return id;
 	} else {
